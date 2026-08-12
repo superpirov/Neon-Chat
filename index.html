@@ -49,21 +49,25 @@
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
     .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
-    .header-buttons { display: flex; gap: 8px; }
+    .header-buttons { display: flex; gap: 6px; align-items: center; }
     .ghost-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'Rajdhani', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.3s ease; }
     .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
     .settings-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
     .settings-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); text-shadow: var(--glow-cyan); }
-    .add-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-green); }
+    .add-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-green); }
     .add-btn:hover { background: var(--neon-green); color: var(--bg); }
 
     /* === CONTACTS === */
     #contacts-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
     #contacts-list::-webkit-scrollbar { width: 4px; }
     #contacts-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
-    .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; }
+    .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; position: relative; }
     .contact-item:hover, .contact-item:active { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); box-shadow: var(--glow-cyan); }
-    .contact-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); flex-shrink: 0; background: rgba(0,240,255,0.05); }
+    .contact-avatar-wrap { position: relative; flex-shrink: 0; }
+    .contact-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); background: rgba(0,240,255,0.05); }
+    .online-dot { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg); }
+    .online-dot.online { background: var(--neon-green); box-shadow: 0 0 6px rgba(0,255,136,0.6); }
+    .online-dot.offline { background: var(--text-dim); }
     .contact-info { flex: 1; min-width: 0; }
     .contact-name { font-size: 16px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .contact-last-msg { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
@@ -91,7 +95,7 @@
     /* === MODAL === */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: grid; gap: 14px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
+    .modal { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: grid; gap: 14px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); max-height: 90vh; overflow-y: auto; }
     .modal h3 { font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); text-align: center; letter-spacing: 2px; }
     .modal p { color: var(--text-dim); font-size: 13px; text-align: center; }
     .modal-buttons { display: flex; gap: 10px; }
@@ -101,6 +105,16 @@
     .btn-save { padding: 12px; border-radius: 10px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
     .btn-save:hover { background: var(--neon-green); color: var(--bg); }
     .modal-msg { text-align: center; font-size: 13px; min-height: 18px; }
+
+    /* Toggle switch */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .toggle-label { color: var(--text); font-size: 14px; }
+    .toggle-switch { position: relative; width: 48px; height: 26px; cursor: pointer; }
+    .toggle-switch input { display: none; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--text-dim); border-radius: 26px; transition: 0.3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; bottom: 3px; background: var(--bg); border-radius: 50%; transition: 0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--neon-green); box-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
   </style>
 </head>
 <body>
@@ -129,7 +143,7 @@
       </div>
       <div class="header-buttons">
         <button id="add-contact-btn" class="add-btn">+ Добавить</button>
-        <button id="settings-btn" class="settings-btn" title="Сменить пароль">⚙️</button>
+        <button id="settings-btn" class="settings-btn" title="Настройки">⚙️</button>
         <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
       </div>
     </header>
@@ -167,17 +181,30 @@
     </div>
   </div>
 
-  <!-- МОДАЛКА: СМЕНА ПАРОЛЯ -->
-  <div id="pass-modal" class="modal-overlay">
+  <!-- МОДАЛКА: НАСТРОЙКИ -->
+  <div id="settings-modal" class="modal-overlay">
     <div class="modal">
-      <h3>⚙️ СМЕНА ПАРОЛЯ</h3>
-      <p>Введи новый пароль</p>
+      <h3>⚙️ НАСТРОЙКИ</h3>
+
+      <div class="toggle-row">
+        <span class="toggle-label">🔔 Уведомления</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="notif-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p id="notif-status" style="font-size:12px;text-align:center;color:var(--text-dim);min-height:16px;"></p>
+
+      <div class="toggle-row">
+        <span class="toggle-label">🔑 Сменить пароль</span>
+      </div>
       <input id="new-pass" type="password" placeholder="Новый пароль" maxlength="50" autocomplete="off">
       <input id="new-pass-confirm" type="password" placeholder="Повтори пароль" maxlength="50" autocomplete="off">
       <p id="pass-msg" class="modal-msg"></p>
+
       <div class="modal-buttons">
-        <button id="pass-cancel" class="btn-cancel">ОТМЕНА</button>
-        <button id="pass-save" class="btn-save">СОХРАНИТЬ</button>
+        <button id="settings-close" class="btn-cancel">ЗАКРЫТЬ</button>
+        <button id="pass-save" class="btn-save">СОХРАНИТЬ ПАРОЛЬ</button>
       </div>
     </div>
   </div>
@@ -216,18 +243,24 @@
     var addCancel = document.getElementById('add-cancel');
     var addSave = document.getElementById('add-save');
 
-    var passModal = document.getElementById('pass-modal');
+    var settingsModal = document.getElementById('settings-modal');
+    var notifToggle = document.getElementById('notif-toggle');
+    var notifStatus = document.getElementById('notif-status');
     var newPassInput = document.getElementById('new-pass');
     var newPassConfirm = document.getElementById('new-pass-confirm');
     var passMsg = document.getElementById('pass-msg');
-    var passCancel = document.getElementById('pass-cancel');
+    var settingsClose = document.getElementById('settings-close');
     var passSave = document.getElementById('pass-save');
 
     var currentUser = null;
     var currentChatUserId = null;
     var seenMessages = {};
     var channel = null;
+    var presenceChannel = null;
     var isRegisterMode = false;
+    var onlineUsers = {};
+    var presenceInterval = null;
+    var swRegistration = null;
 
     function showError(msg) { errorMsg.textContent = msg; }
     function hideError() { errorMsg.textContent = ''; }
@@ -238,7 +271,119 @@
       chatSection.style.display = name === 'chat' ? 'flex' : 'none';
     }
 
-    // === ПЕРЕКЛЮЧЕНИЕ ВХОД / РЕГИСТРАЦИЯ ===
+    // =============================================
+    // УВЕДОМЛЕНИЯ
+    // =============================================
+    function areNotificationsEnabled() {
+      return localStorage.getItem('neon_notif_enabled') === 'true';
+    }
+
+    function setNotificationsEnabled(val) {
+      localStorage.setItem('neon_notif_enabled', val ? 'true' : 'false');
+    }
+
+    async function initServiceWorker() {
+      if (!('serviceWorker' in navigator)) {
+        notifStatus.textContent = 'Браузер не поддерживает уведомления';
+        return;
+      }
+      try {
+        swRegistration = await navigator.serviceWorker.register('/Neon-Chat/sw.js');
+      } catch (e) {
+        console.error('SW error:', e);
+      }
+    }
+
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        notifStatus.textContent = 'Браузер не поддерживает уведомления';
+        return false;
+      }
+      if (Notification.permission === 'granted') return true;
+      if (Notification.permission === 'denied') {
+        notifStatus.textContent = 'Уведомления заблокированы в браузере';
+        return false;
+      }
+      var result = await Notification.requestPermission();
+      return result === 'granted';
+    }
+
+    function showLocalNotification(title, body) {
+      if (!areNotificationsEnabled()) return;
+      if (Notification.permission !== 'granted') return;
+      try {
+        new Notification(title, {
+          body: body,
+          icon: 'https://superpirov.github.io/Neon-Chat/icon.png',
+          tag: 'neon-chat-' + Date.now(),
+          vibrate: [200, 100, 200]
+        });
+      } catch (e) {
+        console.error('Notification error:', e);
+      }
+    }
+
+    // Toggle notifications
+    notifToggle.addEventListener('change', async function() {
+      if (notifToggle.checked) {
+        var granted = await requestNotificationPermission();
+        if (granted) {
+          setNotificationsEnabled(true);
+          notifStatus.textContent = '✅ Уведомления включены';
+          notifStatus.style.color = '#00ff88';
+          // Тестовое уведомление
+          showLocalNotification('Neon Chat', 'Уведомления работают! 🔔');
+        } else {
+          notifToggle.checked = false;
+          setNotificationsEnabled(false);
+          notifStatus.textContent = '❌ Разрешите уведомления в браузере';
+          notifStatus.style.color = '#ff00aa';
+        }
+      } else {
+        setNotificationsEnabled(false);
+        notifStatus.textContent = 'Уведомления отключены';
+        notifStatus.style.color = '#6a6a8a';
+      }
+    });
+
+    // =============================================
+    // ОНЛАЙН-СТАТУС
+    // =============================================
+    async function updatePresence() {
+      if (!currentUser) return;
+      try {
+        await client.from('user_presence').upsert({
+          user_id: currentUser.id,
+          last_seen: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+      } catch (e) { console.error('Presence error:', e); }
+    }
+
+    async function loadOnlineStatuses(userIds) {
+      if (!userIds || userIds.length === 0) return {};
+      try {
+        var result = await client.from('user_presence').select('*').in('user_id', userIds);
+        if (result.error) return {};
+        var statuses = {};
+        var now = Date.now();
+        for (var i = 0; i < result.data.length; i++) {
+          var p = result.data[i];
+          var diff = now - new Date(p.last_seen).getTime();
+          statuses[p.user_id] = diff < 60000; // онлайн если был активен последние 60 сек
+        }
+        return statuses;
+      } catch (e) { return {}; }
+    }
+
+    function startPresenceHeartbeat() {
+      updatePresence();
+      if (presenceInterval) clearInterval(presenceInterval);
+      presenceInterval = setInterval(updatePresence, 20000);
+    }
+
+    // =============================================
+    // ПЕРЕКЛЮЧЕНИЕ ВХОД / РЕГИСТРАЦИЯ
+    // =============================================
     toggleLink.addEventListener('click', function() {
       isRegisterMode = !isRegisterMode;
       if (isRegisterMode) {
@@ -300,37 +445,57 @@
       showScreen('contacts');
       loadContacts();
       startRealtime();
+      startPresenceHeartbeat();
+      initServiceWorker();
+
+      // Установить состояние toggle
+      notifToggle.checked = areNotificationsEnabled();
+      if (areNotificationsEnabled() && Notification.permission === 'granted') {
+        notifStatus.textContent = '✅ Уведомления включены';
+        notifStatus.style.color = '#00ff88';
+      } else if (areNotificationsEnabled()) {
+        notifStatus.textContent = 'Разрешите уведомления в браузере';
+        notifStatus.style.color = '#ffe600';
+      } else {
+        notifStatus.textContent = 'Уведомления отключены';
+        notifStatus.style.color = '#6a6a8a';
+      }
     }
 
-    // === КОНТАКТЫ (только добавленные) ===
+    // === КОНТАКТЫ ===
     async function loadContacts() {
       contactsList.innerHTML = '<div class="no-contacts">Загрузка...</div>';
       try {
-        // Получаем ID добавленных контактов
         var contactsResult = await client.from('contacts').select('contact_id').eq('user_id', currentUser.id);
         if (contactsResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка загрузки</div>'; return; }
 
         if (!contactsResult.data || contactsResult.data.length === 0) {
-          contactsList.innerHTML = '<div class="no-contacts">У тебя пока нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b> и введи никнейм человека, которого хочешь добавить.</div>';
+          contactsList.innerHTML = '<div class="no-contacts">У тебя пока нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b> и введи никнейм человека.</div>';
           return;
         }
 
         var contactIds = contactsResult.data.map(function(c) { return c.contact_id; });
-
-        // Получаем данные пользователей
         var usersResult = await client.from('users').select('*').in('id', contactIds).order('nickname', { ascending: true });
         if (usersResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
+
+        // Загрузить онлайн-статусы
+        var onlineStatuses = await loadOnlineStatuses(contactIds);
 
         contactsList.innerHTML = '';
         for (var i = 0; i < usersResult.data.length; i++) {
           var user = usersResult.data[i];
           var lastMsg = await getLastMessage(user.id);
+          var isOnline = onlineStatuses[user.id] || false;
+
           var div = document.createElement('div');
           div.className = 'contact-item';
           div.innerHTML =
-            '<div class="contact-avatar">' + escapeHtml(user.nickname.charAt(0).toUpperCase()) + '</div>' +
+            '<div class="contact-avatar-wrap">' +
+              '<div class="contact-avatar">' + escapeHtml(user.nickname.charAt(0).toUpperCase()) + '</div>' +
+              '<div class="online-dot ' + (isOnline ? 'online' : 'offline') + '"></div>' +
+            '</div>' +
             '<div class="contact-info">' +
-              '<div class="contact-name">' + escapeHtml(user.nickname) + '</div>' +
+              '<div class="contact-name">' + escapeHtml(user.nickname) + (isOnline ? ' <span style="color:#00ff88;font-size:11px;">онлайн</span>' : '') + '</div>' +
               '<div class="contact-last-msg">' + (lastMsg ? escapeHtml(lastMsg.text.substring(0, 40)) : 'Нет сообщений') + '</div>' +
             '</div>' +
             '<div class="contact-time">' + (lastMsg ? formatTime(lastMsg.created_at) : '') + '</div>';
@@ -377,20 +542,13 @@
       var nickname = addNickname.value.trim();
       if (nickname.length < 2) { addMsg.textContent = 'Введи никнейм'; addMsg.style.color = '#ff00aa'; return; }
       if (nickname === currentUser.nickname) { addMsg.textContent = 'Нельзя добавить себя'; addMsg.style.color = '#ff00aa'; return; }
-
       try {
-        // Найти пользователя по никнейму
         var userResult = await client.from('users').select('id').eq('nickname', nickname).single();
         if (userResult.error || !userResult.data) { addMsg.textContent = 'Пользователь не найден'; addMsg.style.color = '#ff00aa'; return; }
-
-        // Проверить, не добавлен ли уже
         var existResult = await client.from('contacts').select('id').eq('user_id', currentUser.id).eq('contact_id', userResult.data.id).single();
         if (existResult.data) { addMsg.textContent = 'Уже в контактах!'; addMsg.style.color = '#ffe600'; return; }
-
-        // Добавить
         var insertResult = await client.from('contacts').insert({ user_id: currentUser.id, contact_id: userResult.data.id }).select().single();
         if (insertResult.error) { addMsg.textContent = 'Ошибка: ' + insertResult.error.message; addMsg.style.color = '#ff00aa'; return; }
-
         addMsg.textContent = '✅ Добавлен!';
         addMsg.style.color = '#00ff88';
         setTimeout(function() { addModal.classList.remove('active'); loadContacts(); }, 1000);
@@ -470,35 +628,52 @@
     // === REALTIME ===
     function startRealtime() {
       if (channel) return;
-      channel = client.channel('neon-private-v2');
+      channel = client.channel('neon-private-v3');
       channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, function(payload) {
         if (!payload || !payload.new) return;
         var msg = payload.new;
-        var isForMe = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) ||
-                      (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
-        if (isForMe && currentChatUserId) addMessage(msg, true);
+
+        // Сообщение для текущего чата
+        var isForCurrentChat = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) ||
+                               (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
+        if (isForCurrentChat && currentChatUserId) {
+          addMessage(msg, true);
+        }
+
+        // Уведомление если сообщение не от меня и я не в этом чате
+        if (msg.sender_id !== currentUser.id && msg.receiver_id === currentUser.id) {
+          if (!currentChatUserId || msg.sender_id !== currentChatUserId) {
+            // Получить имя отправителя
+            client.from('users').select('nickname').eq('id', msg.sender_id).single().then(function(r) {
+              var senderName = (r.data && r.data.nickname) ? r.data.nickname : 'Неизвестный';
+              showLocalNotification(senderName, msg.text.substring(0, 100));
+            });
+          }
+        }
+
+        // Обновить контакты
         if (contactsSection.style.display !== 'none') loadContacts();
       });
+
+      // Realtime для онлайн-статусов
+      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'user_presence' }, function() {
+        if (contactsSection.style.display !== 'none') loadContacts();
+      });
+
       channel.subscribe();
     }
 
-    // === ВЫХОД ===
-    logoutBtn.addEventListener('click', function() {
-      localStorage.removeItem('messenger_user');
-      location.reload();
-    });
-
-    // === СМЕНА ПАРОЛЯ ===
+    // === НАСТРОЙКИ ===
     settingsBtn.addEventListener('click', function() {
       newPassInput.value = '';
       newPassConfirm.value = '';
       passMsg.textContent = '';
-      passModal.classList.add('active');
-      newPassInput.focus();
+      notifToggle.checked = areNotificationsEnabled();
+      settingsModal.classList.add('active');
     });
 
-    passCancel.addEventListener('click', function() { passModal.classList.remove('active'); });
-    passModal.addEventListener('click', function(e) { if (e.target === passModal) passModal.classList.remove('active'); });
+    settingsClose.addEventListener('click', function() { settingsModal.classList.remove('active'); });
+    settingsModal.addEventListener('click', function(e) { if (e.target === settingsModal) settingsModal.classList.remove('active'); });
 
     passSave.addEventListener('click', async function() {
       var p1 = newPassInput.value.trim();
@@ -512,11 +687,18 @@
         localStorage.setItem('messenger_user', JSON.stringify(currentUser));
         passMsg.textContent = '✅ Пароль сохранён!';
         passMsg.style.color = '#00ff88';
-        setTimeout(function() { passModal.classList.remove('active'); }, 1500);
+        setTimeout(function() { passMsg.textContent = ''; }, 2000);
       } catch (e) { passMsg.textContent = 'Ошибка: ' + e.message; passMsg.style.color = '#ff00aa'; }
     });
 
     newPassConfirm.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); passSave.click(); } });
+
+    // === ВЫХОД ===
+    logoutBtn.addEventListener('click', function() {
+      if (presenceInterval) clearInterval(presenceInterval);
+      localStorage.removeItem('messenger_user');
+      location.reload();
+    });
 
     // === АВТО-ВХОД ===
     var savedUser = localStorage.getItem('messenger_user');
