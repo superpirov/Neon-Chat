@@ -1,7 +1,18 @@
 const SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
 
+function diagLog(msg, ok) {
+  var diag = document.getElementById('diag');
+  if (!diag) return;
+  var line = document.createElement('div');
+  line.style.color = ok ? '#0f8' : '#f0a';
+  line.textContent = (ok ? '✅ ' : '❌ ') + msg;
+  diag.appendChild(line);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  diagLog('app.js: DOMContentLoaded сработал', true);
+
   var errorMsg = document.getElementById('error-msg');
   var loginBtn = document.getElementById('login-btn');
   var loginName = document.getElementById('login-name');
@@ -13,8 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var loginSection = document.getElementById('login');
   var chatSection = document.getElementById('chat');
 
+  diagLog('app.js: все элементы получены', true);
+
   // Проверка ключей
   if (!SUPABASE_URL || SUPABASE_URL.includes('ВСТАВЬ') || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('ВСТАВЬ')) {
+    diagLog('app.js: ключи не вставлены!', false);
     if (errorMsg) {
       errorMsg.textContent = '⚠ Вставь ключи Supabase в app.js';
       errorMsg.hidden = false;
@@ -22,10 +36,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  diagLog('app.js: ключи найдены, создаю клиент...', true);
+
   var client;
   try {
     client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    diagLog('app.js: Supabase клиент создан успешно!', true);
   } catch (e) {
+    diagLog('app.js: ОШИБКА createClient: ' + e.message, false);
     if (errorMsg) {
       errorMsg.textContent = '⚠ Ошибка Supabase: ' + e.message;
       errorMsg.hidden = false;
@@ -36,9 +54,12 @@ document.addEventListener('DOMContentLoaded', function() {
   var userName = localStorage.getItem('messenger_name') || '';
   var seenMessages = {};
 
+  diagLog('app.js: привязываю кнопку ВОЙТИ...', true);
+
   // === Клик по кнопке ВОЙТИ ===
   if (loginBtn) {
     loginBtn.addEventListener('click', function() {
+      diagLog('app.js: КЛИК ПО КНОПКЕ ВОЙТИ!', true);
       var name = loginName.value.trim();
       if (name.length < 2) {
         if (errorMsg) {
@@ -50,8 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (errorMsg) errorMsg.hidden = true;
       userName = name;
       localStorage.setItem('messenger_name', userName);
+      diagLog('app.js: имя сохранено, открываю чат...', true);
       showChat();
     });
+    diagLog('app.js: обработчик кнопки привязан!', true);
+  } else {
+    diagLog('app.js: кнопка loginBtn = null!', false);
   }
 
   // Enter в поле имени
@@ -85,11 +110,15 @@ document.addEventListener('DOMContentLoaded', function() {
     messagesEl.innerHTML = '';
     seenMessages = {};
 
+    diagLog('app.js: загружаю сообщения...', true);
+
     var result = await client.from('messages').select('*').order('created_at', { ascending: true }).limit(200);
     if (result.error) {
+      diagLog('app.js: ошибка загрузки: ' + result.error.message, false);
       console.error(result.error);
       return;
     }
+    diagLog('app.js: сообщения загружены (' + (result.data ? result.data.length : 0) + ')', true);
     if (result.data) {
       for (var i = 0; i < result.data.length; i++) {
         addMessage(result.data[i], false);
@@ -131,11 +160,15 @@ document.addEventListener('DOMContentLoaded', function() {
       var text = textInput.value.trim();
       if (!text) return;
 
+      diagLog('app.js: отправляю сообщение...', true);
+
       var result = await client.from('messages').insert({ user_name: userName, text: text }).select().single();
       if (result.error) {
+        diagLog('app.js: ошибка отправки: ' + result.error.message, false);
         console.error(result.error);
         return;
       }
+      diagLog('app.js: сообщение отправлено!', true);
       if (result.data) {
         textInput.value = '';
         addMessage(result.data, true);
@@ -144,11 +177,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function initRealtime() {
+    diagLog('app.js: подключаю realtime...', true);
     client.channel('messages-inserts')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function(payload) {
         if (payload && payload.new) addMessage(payload.new, true);
       })
-      .subscribe();
+      .subscribe(function(status) {
+        diagLog('app.js: realtime статус: ' + status, true);
+      });
   }
 
   function scrollToBottom() {
@@ -163,4 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loginSection) loginSection.hidden = false;
     if (chatSection) chatSection.hidden = true;
   }
+
+  diagLog('app.js: инициализация завершена!', true);
 });
