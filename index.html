@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Neon Messenger</title>
+  <meta name="theme-color" content="#0a0a0f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <section id="login" class="screen">
+    <div class="card neon-card">
+      <h1 class="neon-title">NEON CHAT</h1>
+      <p class="subtitle">Введи имя для входа</p>
+      <input id="login-name" placeholder="Твой никнейм" maxlength="30" autocomplete="off">
+      <button id="login-btn" class="neon-btn">ВОЙТИ</button>
+      <p id="error-msg" class="error-text" hidden></p>
+    </div>
+  </section>
+
+  <section id="chat" class="screen" hidden>
+    <header class="neon-header">
+      <div>
+        <h2 class="neon-title-sm">NEON CHAT</h2>
+        <p class="user-label">▸ <span id="who"></span></p>
+      </div>
+      <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
+    </header>
+
+    <main id="messages"></main>
+
+    <form id="chat-form" class="neon-form">
+      <input
+        id="text"
+        placeholder="Напиши сообщение..."
+        autocomplete="off"
+        maxlength="1000"
+        required
+      >
+      <button type="submit" class="send-btn">➤</button>
+    </form>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
