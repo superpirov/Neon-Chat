@@ -16,6 +16,7 @@
       --neon-cyan: #00f0ff;
       --neon-pink: #ff00aa;
       --neon-green: #00ff88;
+      --neon-yellow: #ffe600;
       --text: #e0e0e0;
       --text-dim: #6a6a8a;
       --border: rgba(0, 240, 255, 0.15);
@@ -28,9 +29,9 @@
     body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
     .screen { position: relative; z-index: 1; height: 100dvh; display: flex; flex-direction: column; }
 
-    /* === LOGIN === */
-    #login { align-items: center; justify-content: center; padding: 20px; }
-    .neon-card { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; display: grid; gap: 16px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
+    /* === AUTH SCREENS === */
+    .auth-screen { align-items: center; justify-content: center; padding: 20px; }
+    .neon-card { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; display: grid; gap: 14px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
     .neon-title { font-family: 'Orbitron', sans-serif; font-size: 28px; text-align: center; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 3px; }
     .subtitle { text-align: center; color: var(--text-dim); font-size: 14px; letter-spacing: 1px; }
     input { width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,240,255,0.05); color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif; font-size: 16px; outline: none; transition: all 0.3s ease; }
@@ -40,10 +41,14 @@
     .neon-btn:hover, .neon-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
     .btn-secondary { padding: 14px; border-radius: 10px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-green); }
     .btn-secondary:hover { background: var(--neon-green); color: var(--bg); }
-    .error-text { color: var(--neon-pink); text-align: center; font-size: 13px; text-shadow: var(--glow-pink); min-height: 20px; }
-    .lock-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
-    .login-toggle { text-align: center; color: var(--text-dim); font-size: 13px; cursor: pointer; }
-    .login-toggle span { color: var(--neon-cyan); text-decoration: underline; }
+    .msg-text { text-align: center; font-size: 13px; min-height: 20px; }
+    .msg-error { color: var(--neon-pink); text-shadow: var(--glow-pink); }
+    .msg-success { color: var(--neon-green); text-shadow: var(--glow-green); }
+    .msg-info { color: var(--neon-cyan); }
+    .lock-icon { font-size: 40px; text-align: center; margin-bottom: 4px; }
+    .auth-link { text-align: center; color: var(--text-dim); font-size: 13px; cursor: pointer; }
+    .auth-link span { color: var(--neon-cyan); text-decoration: underline; }
+    .auth-link span:hover { color: var(--neon-pink); }
 
     /* === HEADER === */
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
@@ -61,7 +66,7 @@
     #contacts-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
     #contacts-list::-webkit-scrollbar { width: 4px; }
     #contacts-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
-    .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; position: relative; }
+    .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; }
     .contact-item:hover, .contact-item:active { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); box-shadow: var(--glow-cyan); }
     .contact-avatar-wrap { position: relative; flex-shrink: 0; }
     .contact-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); background: rgba(0,240,255,0.05); }
@@ -105,8 +110,6 @@
     .btn-save { padding: 12px; border-radius: 10px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
     .btn-save:hover { background: var(--neon-green); color: var(--bg); }
     .modal-msg { text-align: center; font-size: 13px; min-height: 18px; }
-
-    /* Toggle switch */
     .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .toggle-label { color: var(--text); font-size: 14px; }
     .toggle-switch { position: relative; width: 48px; height: 26px; cursor: pointer; }
@@ -119,23 +122,62 @@
 </head>
 <body>
 
-  <!-- ЭКРАН ВХОДА / РЕГИСТРАЦИИ -->
-  <section id="login" class="screen">
+  <!-- РЕГИСТРАЦИЯ -->
+  <section id="screen-register" class="screen auth-screen">
+    <div class="card neon-card">
+      <div class="lock-icon"></div>
+      <h1 class="neon-title">NEON CHAT</h1>
+      <p class="subtitle">Регистрация</p>
+      <input id="reg-nickname" placeholder="Никнейм" maxlength="30" autocomplete="off">
+      <input id="reg-email" type="email" placeholder="Email" maxlength="100" autocomplete="email">
+      <input id="reg-pass" type="password" placeholder="Пароль (минимум 6 символов)" maxlength="100" autocomplete="new-password">
+      <button id="reg-btn" class="neon-btn">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+      <p id="reg-msg" class="msg-text"></p>
+      <p class="auth-link">Уже есть аккаунт? <span id="go-login">Войти</span></p>
+    </div>
+  </section>
+
+  <!-- ВХОД -->
+  <section id="screen-login" class="screen auth-screen" style="display:none;">
     <div class="card neon-card">
       <div class="lock-icon">🔒</div>
       <h1 class="neon-title">NEON CHAT</h1>
-      <p class="subtitle" id="login-subtitle">Вход в мессенджер</p>
-      <input id="login-name" placeholder="Никнейм" maxlength="30" autocomplete="off">
-      <input id="login-pass" type="password" placeholder="Пароль" maxlength="50" autocomplete="off">
+      <p class="subtitle">Вход</p>
+      <input id="login-email" type="email" placeholder="Email" maxlength="100" autocomplete="email">
+      <input id="login-pass" type="password" placeholder="Пароль" maxlength="100" autocomplete="current-password">
       <button id="login-btn" class="neon-btn">ВОЙТИ</button>
-      <button id="register-btn" class="btn-secondary" style="display:none;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-      <p id="error-msg" class="error-text"></p>
-      <p class="login-toggle" id="toggle-mode">Нет аккаунта? <span id="toggle-link">Зарегистрироваться</span></p>
+      <p id="login-msg" class="msg-text"></p>
+      <p class="auth-link"><span id="go-forgot">Забыли пароль?</span></p>
+      <p class="auth-link">Нет аккаунта? <span id="go-register">Зарегистрироваться</span></p>
+    </div>
+  </section>
+
+  <!-- ВОССТАНОВЛЕНИЕ ПАРОЛЯ -->
+  <section id="screen-forgot" class="screen auth-screen" style="display:none;">
+    <div class="card neon-card">
+      <div class="lock-icon">🔑</div>
+      <h1 class="neon-title">NEON CHAT</h1>
+      <p class="subtitle">Восстановление пароля</p>
+      <input id="forgot-email" type="email" placeholder="Твой email" maxlength="100" autocomplete="email">
+      <button id="forgot-btn" class="neon-btn">ОТПРАВИТЬ ССЫЛКУ</button>
+      <p id="forgot-msg" class="msg-text"></p>
+      <p class="auth-link"><span id="go-back-login">← Вернуться ко входу</span></p>
+    </div>
+  </section>
+
+  <!-- ПОДТВЕРЖДЕНИЕ EMAIL -->
+  <section id="screen-confirm" class="screen auth-screen" style="display:none;">
+    <div class="card neon-card">
+      <div class="lock-icon">✉️</div>
+      <h1 class="neon-title">NEON CHAT</h1>
+      <p class="subtitle">Проверь почту</p>
+      <p class="msg-text msg-info" style="min-height:auto;line-height:1.6;">Мы отправили ссылку подтверждения на твой email.<br><br>Перейди по ней, чтобы активировать аккаунт.</p>
+      <button id="confirm-ok" class="neon-btn">ПОНЯТНО</button>
     </div>
   </section>
 
   <!-- СПИСОК КОНТАКТОВ -->
-  <section id="contacts" class="screen" style="display:none;">
+  <section id="screen-contacts" class="screen" style="display:none;">
     <header class="neon-header">
       <div>
         <h2 class="neon-title-sm">NEON CHAT</h2>
@@ -151,13 +193,11 @@
   </section>
 
   <!-- ЛИЧНЫЙ ЧАТ -->
-  <section id="chat" class="screen" style="display:none;">
+  <section id="screen-chat" class="screen" style="display:none;">
     <header class="neon-header">
       <div style="display:flex;align-items:center;gap:10px;">
         <button id="back-btn" class="back-btn">← Назад</button>
-        <div>
-          <h2 class="neon-title-sm" id="chat-with"></h2>
-        </div>
+        <div><h2 class="neon-title-sm" id="chat-with"></h2></div>
       </div>
     </header>
     <main id="messages"></main>
@@ -185,7 +225,6 @@
   <div id="settings-modal" class="modal-overlay">
     <div class="modal">
       <h3>⚙️ НАСТРОЙКИ</h3>
-
       <div class="toggle-row">
         <span class="toggle-label">🔔 Уведомления</span>
         <label class="toggle-switch">
@@ -194,17 +233,10 @@
         </label>
       </div>
       <p id="notif-status" style="font-size:12px;text-align:center;color:var(--text-dim);min-height:16px;"></p>
-
-      <div class="toggle-row">
-        <span class="toggle-label">🔑 Сменить пароль</span>
-      </div>
-      <input id="new-pass" type="password" placeholder="Новый пароль" maxlength="50" autocomplete="off">
-      <input id="new-pass-confirm" type="password" placeholder="Повтори пароль" maxlength="50" autocomplete="off">
-      <p id="pass-msg" class="modal-msg"></p>
-
+      <div class="toggle-row"><span class="toggle-label">📧 Email</span></div>
+      <p id="settings-email" style="font-size:13px;text-align:center;color:var(--neon-cyan);"></p>
       <div class="modal-buttons">
         <button id="settings-close" class="btn-cancel">ЗАКРЫТЬ</button>
-        <button id="pass-save" class="btn-save">СОХРАНИТЬ ПАРОЛЬ</button>
       </div>
     </div>
   </div>
@@ -212,137 +244,271 @@
   <script>
     var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
-
     var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Элементы
-    var loginSection = document.getElementById('login');
-    var contactsSection = document.getElementById('contacts');
-    var chatSection = document.getElementById('chat');
+    // Элементы экранов
+    var screens = {
+      register: document.getElementById('screen-register'),
+      login: document.getElementById('screen-login'),
+      forgot: document.getElementById('screen-forgot'),
+      confirm: document.getElementById('screen-confirm'),
+      contacts: document.getElementById('screen-contacts'),
+      chat: document.getElementById('screen-chat')
+    };
+
+    function showScreen(name) {
+      for (var key in screens) {
+        screens[key].style.display = key === name ? 'flex' : 'none';
+      }
+    }
+
+    // Элементы регистрации
+    var regNickname = document.getElementById('reg-nickname');
+    var regEmail = document.getElementById('reg-email');
+    var regPass = document.getElementById('reg-pass');
+    var regBtn = document.getElementById('reg-btn');
+    var regMsg = document.getElementById('reg-msg');
+
+    // Элементы входа
+    var loginEmail = document.getElementById('login-email');
+    var loginPass = document.getElementById('login-pass');
     var loginBtn = document.getElementById('login-btn');
-    var registerBtn = document.getElementById('register-btn');
-    var loginNameEl = document.getElementById('login-name');
-    var loginPassEl = document.getElementById('login-pass');
-    var loginSubtitle = document.getElementById('login-subtitle');
-    var toggleLink = document.getElementById('toggle-link');
-    var errorMsg = document.getElementById('error-msg');
+    var loginMsg = document.getElementById('login-msg');
+
+    // Элементы восстановления
+    var forgotEmail = document.getElementById('forgot-email');
+    var forgotBtn = document.getElementById('forgot-btn');
+    var forgotMsg = document.getElementById('forgot-msg');
+
+    // Навигация между экранами
+    document.getElementById('go-login').addEventListener('click', function() { showScreen('login'); });
+    document.getElementById('go-register').addEventListener('click', function() { showScreen('register'); });
+    document.getElementById('go-forgot').addEventListener('click', function() { showScreen('forgot'); });
+    document.getElementById('go-back-login').addEventListener('click', function() { showScreen('login'); });
+    document.getElementById('confirm-ok').addEventListener('click', function() { showScreen('login'); });
+
+    // Элементы чата
     var who = document.getElementById('who');
     var contactsList = document.getElementById('contacts-list');
     var messagesEl = document.getElementById('messages');
     var form = document.getElementById('chat-form');
     var textInput = document.getElementById('text');
-    var chatWith = document.getElementById('chat-with');
+    var chatWithEl = document.getElementById('chat-with');
     var backBtn = document.getElementById('back-btn');
     var logoutBtn = document.getElementById('logout-btn');
-    var settingsBtn = document.getElementById('settings-btn');
+    var settingsBtnEl = document.getElementById('settings-btn');
     var addContactBtn = document.getElementById('add-contact-btn');
 
     var addModal = document.getElementById('add-modal');
-    var addNickname = document.getElementById('add-nickname');
-    var addMsg = document.getElementById('add-msg');
+    var addNicknameEl = document.getElementById('add-nickname');
+    var addMsgEl = document.getElementById('add-msg');
     var addCancel = document.getElementById('add-cancel');
     var addSave = document.getElementById('add-save');
 
     var settingsModal = document.getElementById('settings-modal');
     var notifToggle = document.getElementById('notif-toggle');
     var notifStatus = document.getElementById('notif-status');
-    var newPassInput = document.getElementById('new-pass');
-    var newPassConfirm = document.getElementById('new-pass-confirm');
-    var passMsg = document.getElementById('pass-msg');
+    var settingsEmail = document.getElementById('settings-email');
     var settingsClose = document.getElementById('settings-close');
-    var passSave = document.getElementById('pass-save');
 
     var currentUser = null;
     var currentChatUserId = null;
     var seenMessages = {};
     var channel = null;
-    var presenceChannel = null;
-    var isRegisterMode = false;
-    var onlineUsers = {};
     var presenceInterval = null;
-    var swRegistration = null;
 
-    function showError(msg) { errorMsg.textContent = msg; }
-    function hideError() { errorMsg.textContent = ''; }
+    function setMsg(el, text, type) {
+      el.textContent = text;
+      el.className = 'msg-text ' + (type === 'error' ? 'msg-error' : type === 'success' ? 'msg-success' : 'msg-info');
+    }
 
-    function showScreen(name) {
-      loginSection.style.display = name === 'login' ? 'flex' : 'none';
-      contactsSection.style.display = name === 'contacts' ? 'flex' : 'none';
-      chatSection.style.display = name === 'chat' ? 'flex' : 'none';
+    // =============================================
+    // РЕГИСТРАЦИЯ
+    // =============================================
+    regBtn.addEventListener('click', async function() {
+      var nickname = regNickname.value.trim();
+      var email = regEmail.value.trim();
+      var pass = regPass.value.trim();
+
+      if (nickname.length < 2) { setMsg(regMsg, 'Никнейм минимум 2 символа', 'error'); return; }
+      if (!email || email.indexOf('@') === -1) { setMsg(regMsg, 'Введи корректный email', 'error'); return; }
+      if (pass.length < 6) { setMsg(regMsg, 'Пароль минимум 6 символов', 'error'); return; }
+
+      regBtn.disabled = true;
+      regBtn.textContent = 'ОТПРАВКА...';
+
+      try {
+        var result = await client.auth.signUp({
+          email: email,
+          password: pass,
+          options: {
+            data: { nickname: nickname },
+            emailRedirectTo: 'https://superpirov.github.io/Neon-Chat/'
+          }
+        });
+
+        if (result.error) {
+          setMsg(regMsg, result.error.message, 'error');
+          regBtn.disabled = false;
+          regBtn.textContent = 'ЗАРЕГИСТРИРОВАТЬСЯ';
+          return;
+        }
+
+        if (result.data.session) {
+          // Email подтверждение не требуется — сразу вход
+          currentUser = result.data.user;
+          enterApp();
+        } else {
+          // Нужно подтвердить email
+          showScreen('confirm');
+        }
+      } catch (e) {
+        setMsg(regMsg, 'Ошибка: ' + e.message, 'error');
+      }
+
+      regBtn.disabled = false;
+      regBtn.textContent = 'ЗАРЕГИСТРИРОВАТЬСЯ';
+    });
+
+    // =============================================
+    // ВХОД
+    // =============================================
+    loginBtn.addEventListener('click', async function() {
+      var email = loginEmail.value.trim();
+      var pass = loginPass.value.trim();
+
+      if (!email) { setMsg(loginMsg, 'Введи email', 'error'); return; }
+      if (!pass) { setMsg(loginMsg, 'Введи пароль', 'error'); return; }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'ВХОД...';
+
+      try {
+        var result = await client.auth.signInWithPassword({ email: email, password: pass });
+        if (result.error) {
+          setMsg(loginMsg, result.error.message, 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'ВОЙТИ';
+          return;
+        }
+        currentUser = result.data.user;
+        enterApp();
+      } catch (e) {
+        setMsg(loginMsg, 'Ошибка: ' + e.message, 'error');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'ВОЙТИ';
+      }
+    });
+
+    loginEmail.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginPass.focus(); } });
+    loginPass.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); } });
+    regEmail.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); regPass.focus(); } });
+    regPass.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); regBtn.click(); } });
+
+    // =============================================
+    // ВОССТАНОВЛЕНИЕ ПАРОЛЯ
+    // =============================================
+    forgotBtn.addEventListener('click', async function() {
+      var email = forgotEmail.value.trim();
+      if (!email || email.indexOf('@') === -1) { setMsg(forgotMsg, 'Введи корректный email', 'error'); return; }
+
+      forgotBtn.disabled = true;
+      forgotBtn.textContent = 'ОТПРАВКА...';
+
+      try {
+        var result = await client.auth.resetPasswordForEmail(email, {
+          redirectTo: 'https://superpirov.github.io/Neon-Chat/'
+        });
+        if (result.error) {
+          setMsg(forgotMsg, result.error.message, 'error');
+        } else {
+          setMsg(forgotMsg, '✅ Ссылка для сброса отправлена на ' + email, 'success');
+        }
+      } catch (e) {
+        setMsg(forgotMsg, 'Ошибка: ' + e.message, 'error');
+      }
+
+      forgotBtn.disabled = false;
+      forgotBtn.textContent = 'ОТПРАВИТЬ ССЫЛКУ';
+    });
+
+    // =============================================
+    // ВХОД В ПРИЛОЖЕНИЕ
+    // =============================================
+    async function enterApp() {
+      // Получить профиль пользователя
+      try {
+        var profileResult = await client.from('users').select('*').eq('id', currentUser.id).single();
+        if (profileResult.data) {
+          currentUser.profile = profileResult.data;
+        }
+      } catch (e) {}
+
+      var displayName = (currentUser.profile && currentUser.profile.nickname) ? currentUser.profile.nickname : currentUser.email.split('@')[0];
+      who.textContent = displayName;
+      settingsEmail.textContent = currentUser.email;
+
+      showScreen('contacts');
+      loadContacts();
+      startRealtime();
+      startPresenceHeartbeat();
+      initServiceWorker();
+
+      notifToggle.checked = areNotificationsEnabled();
+      updateNotifStatus();
     }
 
     // =============================================
     // УВЕДОМЛЕНИЯ
     // =============================================
-    function areNotificationsEnabled() {
-      return localStorage.getItem('neon_notif_enabled') === 'true';
-    }
-
-    function setNotificationsEnabled(val) {
-      localStorage.setItem('neon_notif_enabled', val ? 'true' : 'false');
-    }
+    function areNotificationsEnabled() { return localStorage.getItem('neon_notif_enabled') === 'true'; }
+    function setNotificationsEnabled(val) { localStorage.setItem('neon_notif_enabled', val ? 'true' : 'false'); }
 
     async function initServiceWorker() {
-      if (!('serviceWorker' in navigator)) {
-        notifStatus.textContent = 'Браузер не поддерживает уведомления';
-        return;
-      }
-      try {
-        swRegistration = await navigator.serviceWorker.register('/Neon-Chat/sw.js');
-      } catch (e) {
-        console.error('SW error:', e);
-      }
+      if (!('serviceWorker' in navigator)) return;
+      try { await navigator.serviceWorker.register('/Neon-Chat/sw.js'); } catch (e) {}
     }
 
     async function requestNotificationPermission() {
-      if (!('Notification' in window)) {
-        notifStatus.textContent = 'Браузер не поддерживает уведомления';
-        return false;
-      }
+      if (!('Notification' in window)) { notifStatus.textContent = 'Браузер не поддерживает'; return false; }
       if (Notification.permission === 'granted') return true;
-      if (Notification.permission === 'denied') {
-        notifStatus.textContent = 'Уведомления заблокированы в браузере';
-        return false;
-      }
-      var result = await Notification.requestPermission();
-      return result === 'granted';
+      if (Notification.permission === 'denied') { notifStatus.textContent = 'Заблокировано в браузере'; return false; }
+      return (await Notification.requestPermission()) === 'granted';
     }
 
     function showLocalNotification(title, body) {
-      if (!areNotificationsEnabled()) return;
-      if (Notification.permission !== 'granted') return;
-      try {
-        new Notification(title, {
-          body: body,
-          icon: 'https://superpirov.github.io/Neon-Chat/icon.png',
-          tag: 'neon-chat-' + Date.now(),
-          vibrate: [200, 100, 200]
-        });
-      } catch (e) {
-        console.error('Notification error:', e);
+      if (!areNotificationsEnabled() || Notification.permission !== 'granted') return;
+      try { new Notification(title, { body: body, tag: 'neon-' + Date.now(), vibrate: [200, 100, 200] }); } catch (e) {}
+    }
+
+    function updateNotifStatus() {
+      if (areNotificationsEnabled() && Notification.permission === 'granted') {
+        notifStatus.textContent = '✅ Включены';
+        notifStatus.style.color = '#00ff88';
+      } else if (areNotificationsEnabled()) {
+        notifStatus.textContent = 'Разрешите в браузере';
+        notifStatus.style.color = '#ffe600';
+      } else {
+        notifStatus.textContent = 'Отключены';
+        notifStatus.style.color = '#6a6a8a';
       }
     }
 
-    // Toggle notifications
     notifToggle.addEventListener('change', async function() {
       if (notifToggle.checked) {
         var granted = await requestNotificationPermission();
         if (granted) {
           setNotificationsEnabled(true);
-          notifStatus.textContent = '✅ Уведомления включены';
-          notifStatus.style.color = '#00ff88';
-          // Тестовое уведомление
+          updateNotifStatus();
           showLocalNotification('Neon Chat', 'Уведомления работают! 🔔');
         } else {
           notifToggle.checked = false;
           setNotificationsEnabled(false);
-          notifStatus.textContent = '❌ Разрешите уведомления в браузере';
-          notifStatus.style.color = '#ff00aa';
+          updateNotifStatus();
         }
       } else {
         setNotificationsEnabled(false);
-        notifStatus.textContent = 'Уведомления отключены';
-        notifStatus.style.color = '#6a6a8a';
+        updateNotifStatus();
       }
     });
 
@@ -352,11 +518,8 @@
     async function updatePresence() {
       if (!currentUser) return;
       try {
-        await client.from('user_presence').upsert({
-          user_id: currentUser.id,
-          last_seen: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-      } catch (e) { console.error('Presence error:', e); }
+        await client.from('user_presence').upsert({ user_id: currentUser.id, last_seen: new Date().toISOString() }, { onConflict: 'user_id' });
+      } catch (e) {}
     }
 
     async function loadOnlineStatuses(userIds) {
@@ -367,9 +530,7 @@
         var statuses = {};
         var now = Date.now();
         for (var i = 0; i < result.data.length; i++) {
-          var p = result.data[i];
-          var diff = now - new Date(p.last_seen).getTime();
-          statuses[p.user_id] = diff < 60000; // онлайн если был активен последние 60 сек
+          statuses[result.data[i].user_id] = (now - new Date(result.data[i].last_seen).getTime()) < 60000;
         }
         return statuses;
       } catch (e) { return {}; }
@@ -382,103 +543,20 @@
     }
 
     // =============================================
-    // ПЕРЕКЛЮЧЕНИЕ ВХОД / РЕГИСТРАЦИЯ
+    // КОНТАКТЫ
     // =============================================
-    toggleLink.addEventListener('click', function() {
-      isRegisterMode = !isRegisterMode;
-      if (isRegisterMode) {
-        loginSubtitle.textContent = 'Регистрация';
-        loginBtn.style.display = 'none';
-        registerBtn.style.display = 'block';
-        toggleLink.textContent = 'Войти';
-        document.querySelector('.login-toggle').childNodes[0].textContent = 'Уже есть аккаунт? ';
-      } else {
-        loginSubtitle.textContent = 'Вход в мессенджер';
-        loginBtn.style.display = 'block';
-        registerBtn.style.display = 'none';
-        toggleLink.textContent = 'Зарегистрироваться';
-        document.querySelector('.login-toggle').childNodes[0].textContent = 'Нет аккаунта? ';
-      }
-      hideError();
-    });
-
-    // === РЕГИСТРАЦИЯ ===
-    registerBtn.addEventListener('click', async function() {
-      var name = loginNameEl.value.trim();
-      var pass = loginPassEl.value.trim();
-      if (name.length < 2) { showError('Никнейм минимум 2 символа'); return; }
-      if (pass.length < 2) { showError('Пароль минимум 2 символа'); return; }
-      try {
-        var result = await client.from('users').insert({ nickname: name, password_hash: pass }).select().single();
-        if (result.error) {
-          if (result.error.code === '23505') { showError('Этот никнейм уже занят!'); }
-          else { showError('Ошибка: ' + result.error.message); }
-          return;
-        }
-        currentUser = result.data;
-        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
-        enterApp();
-      } catch (e) { showError('Ошибка: ' + e.message); }
-    });
-
-    // === ВХОД ===
-    loginBtn.addEventListener('click', async function() {
-      var name = loginNameEl.value.trim();
-      var pass = loginPassEl.value.trim();
-      if (name.length < 2) { showError('Введите никнейм'); return; }
-      if (pass.length < 1) { showError('Введите пароль'); return; }
-      try {
-        var result = await client.from('users').select('*').eq('nickname', name).single();
-        if (result.error || !result.data) { showError('Пользователь не найден'); return; }
-        if (result.data.password_hash !== pass) { showError('❌ Неверный пароль!'); loginPassEl.value = ''; return; }
-        currentUser = result.data;
-        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
-        enterApp();
-      } catch (e) { showError('Ошибка: ' + e.message); }
-    });
-
-    loginNameEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginPassEl.focus(); } });
-    loginPassEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (isRegisterMode) registerBtn.click(); else loginBtn.click(); } });
-
-    function enterApp() {
-      who.textContent = currentUser.nickname;
-      showScreen('contacts');
-      loadContacts();
-      startRealtime();
-      startPresenceHeartbeat();
-      initServiceWorker();
-
-      // Установить состояние toggle
-      notifToggle.checked = areNotificationsEnabled();
-      if (areNotificationsEnabled() && Notification.permission === 'granted') {
-        notifStatus.textContent = '✅ Уведомления включены';
-        notifStatus.style.color = '#00ff88';
-      } else if (areNotificationsEnabled()) {
-        notifStatus.textContent = 'Разрешите уведомления в браузере';
-        notifStatus.style.color = '#ffe600';
-      } else {
-        notifStatus.textContent = 'Уведомления отключены';
-        notifStatus.style.color = '#6a6a8a';
-      }
-    }
-
-    // === КОНТАКТЫ ===
     async function loadContacts() {
       contactsList.innerHTML = '<div class="no-contacts">Загрузка...</div>';
       try {
         var contactsResult = await client.from('contacts').select('contact_id').eq('user_id', currentUser.id);
-        if (contactsResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка загрузки</div>'; return; }
-
+        if (contactsResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
         if (!contactsResult.data || contactsResult.data.length === 0) {
-          contactsList.innerHTML = '<div class="no-contacts">У тебя пока нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b> и введи никнейм человека.</div>';
+          contactsList.innerHTML = '<div class="no-contacts">Нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b> и введи никнейм.</div>';
           return;
         }
-
         var contactIds = contactsResult.data.map(function(c) { return c.contact_id; });
         var usersResult = await client.from('users').select('*').in('id', contactIds).order('nickname', { ascending: true });
         if (usersResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
-
-        // Загрузить онлайн-статусы
         var onlineStatuses = await loadOnlineStatuses(contactIds);
 
         contactsList.innerHTML = '';
@@ -486,7 +564,6 @@
           var user = usersResult.data[i];
           var lastMsg = await getLastMessage(user.id);
           var isOnline = onlineStatuses[user.id] || false;
-
           var div = document.createElement('div');
           div.className = 'contact-item';
           div.innerHTML =
@@ -507,90 +584,64 @@
 
     async function getLastMessage(otherUserId) {
       try {
-        var result = await client.from('private_messages')
-          .select('*')
+        var result = await client.from('private_messages').select('*')
           .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + otherUserId + '),and(sender_id.eq.' + otherUserId + ',receiver_id.eq.' + currentUser.id + ')')
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .order('created_at', { ascending: false }).limit(1);
         if (result.data && result.data.length > 0) return result.data[0];
       } catch (e) {}
       return null;
     }
 
-    function formatTime(dateStr) {
-      return new Date(dateStr).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function escapeHtml(str) {
-      var d = document.createElement('div');
-      d.textContent = str;
-      return d.innerHTML;
-    }
+    function formatTime(d) { return new Date(d).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); }
+    function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     // === ДОБАВИТЬ КОНТАКТ ===
-    addContactBtn.addEventListener('click', function() {
-      addNickname.value = '';
-      addMsg.textContent = '';
-      addModal.classList.add('active');
-      addNickname.focus();
-    });
-
+    addContactBtn.addEventListener('click', function() { addNicknameEl.value = ''; addMsgEl.textContent = ''; addModal.classList.add('active'); addNicknameEl.focus(); });
     addCancel.addEventListener('click', function() { addModal.classList.remove('active'); });
     addModal.addEventListener('click', function(e) { if (e.target === addModal) addModal.classList.remove('active'); });
 
     addSave.addEventListener('click', async function() {
-      var nickname = addNickname.value.trim();
-      if (nickname.length < 2) { addMsg.textContent = 'Введи никнейм'; addMsg.style.color = '#ff00aa'; return; }
-      if (nickname === currentUser.nickname) { addMsg.textContent = 'Нельзя добавить себя'; addMsg.style.color = '#ff00aa'; return; }
+      var nickname = addNicknameEl.value.trim();
+      if (nickname.length < 2) { addMsgEl.textContent = 'Введи никнейм'; addMsgEl.style.color = '#ff00aa'; return; }
       try {
         var userResult = await client.from('users').select('id').eq('nickname', nickname).single();
-        if (userResult.error || !userResult.data) { addMsg.textContent = 'Пользователь не найден'; addMsg.style.color = '#ff00aa'; return; }
+        if (userResult.error || !userResult.data) { addMsgEl.textContent = 'Пользователь не найден'; addMsgEl.style.color = '#ff00aa'; return; }
+        if (userResult.data.id === currentUser.id) { addMsgEl.textContent = 'Нельзя добавить себя'; addMsgEl.style.color = '#ff00aa'; return; }
         var existResult = await client.from('contacts').select('id').eq('user_id', currentUser.id).eq('contact_id', userResult.data.id).single();
-        if (existResult.data) { addMsg.textContent = 'Уже в контактах!'; addMsg.style.color = '#ffe600'; return; }
-        var insertResult = await client.from('contacts').insert({ user_id: currentUser.id, contact_id: userResult.data.id }).select().single();
-        if (insertResult.error) { addMsg.textContent = 'Ошибка: ' + insertResult.error.message; addMsg.style.color = '#ff00aa'; return; }
-        addMsg.textContent = '✅ Добавлен!';
-        addMsg.style.color = '#00ff88';
+        if (existResult.data) { addMsgEl.textContent = 'Уже в контактах!'; addMsgEl.style.color = '#ffe600'; return; }
+        var ins = await client.from('contacts').insert({ user_id: currentUser.id, contact_id: userResult.data.id }).select().single();
+        if (ins.error) { addMsgEl.textContent = 'Ошибка: ' + ins.error.message; addMsgEl.style.color = '#ff00aa'; return; }
+        addMsgEl.textContent = '✅ Добавлен!'; addMsgEl.style.color = '#00ff88';
         setTimeout(function() { addModal.classList.remove('active'); loadContacts(); }, 1000);
-      } catch (e) { addMsg.textContent = 'Ошибка: ' + e.message; addMsg.style.color = '#ff00aa'; }
+      } catch (e) { addMsgEl.textContent = 'Ошибка: ' + e.message; addMsgEl.style.color = '#ff00aa'; }
     });
+    addNicknameEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); addSave.click(); } });
 
-    addNickname.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); addSave.click(); } });
-
-    // === ОТКРЫТЬ ЧАТ ===
+    // === ЧАТ ===
     function openChat(user) {
       currentChatUserId = user.id;
-      chatWith.textContent = user.nickname;
+      chatWithEl.textContent = user.nickname;
       showScreen('chat');
       seenMessages = {};
       messagesEl.innerHTML = '';
       loadPrivateMessages();
     }
 
-    backBtn.addEventListener('click', function() {
-      currentChatUserId = null;
-      showScreen('contacts');
-      loadContacts();
-    });
+    backBtn.addEventListener('click', function() { currentChatUserId = null; showScreen('contacts'); loadContacts(); });
 
     async function loadPrivateMessages() {
       try {
-        var result = await client.from('private_messages')
-          .select('*')
+        var result = await client.from('private_messages').select('*')
           .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + currentChatUserId + '),and(sender_id.eq.' + currentChatUserId + ',receiver_id.eq.' + currentUser.id + ')')
-          .order('created_at', { ascending: true })
-          .limit(200);
-        if (result.error) { console.error(result.error); return; }
-        if (result.data) {
-          for (var i = 0; i < result.data.length; i++) addMessage(result.data[i], false);
-        }
-      } catch (e) { console.error(e); }
+          .order('created_at', { ascending: true }).limit(200);
+        if (result.error) return;
+        if (result.data) { for (var i = 0; i < result.data.length; i++) addMessage(result.data[i], false); }
+      } catch (e) {}
       scrollToBottom();
     }
 
     function addMessage(message, scroll) {
-      if (!message || !messagesEl) return;
-      if (seenMessages[message.id]) return;
+      if (!message || !messagesEl || seenMessages[message.id]) return;
       seenMessages[message.id] = true;
       var div = document.createElement('div');
       div.className = 'message';
@@ -609,110 +660,76 @@
 
     function scrollToBottom() { if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight; }
 
-    // === ОТПРАВКА ===
     form.addEventListener('submit', async function(event) {
       event.preventDefault();
       var text = textInput.value.trim();
       if (!text || !currentChatUserId) return;
       try {
-        var result = await client.from('private_messages').insert({
-          sender_id: currentUser.id,
-          receiver_id: currentChatUserId,
-          text: text
-        }).select().single();
-        if (result.error) { console.error(result.error); return; }
+        var result = await client.from('private_messages').insert({ sender_id: currentUser.id, receiver_id: currentChatUserId, text: text }).select().single();
+        if (result.error) return;
         if (result.data) { textInput.value = ''; addMessage(result.data, true); }
-      } catch (e) { console.error(e); }
+      } catch (e) {}
     });
 
     // === REALTIME ===
     function startRealtime() {
       if (channel) return;
-      channel = client.channel('neon-private-v3');
+      channel = client.channel('neon-v4');
       channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, function(payload) {
         if (!payload || !payload.new) return;
         var msg = payload.new;
-
-        // Сообщение для текущего чата
-        var isForCurrentChat = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) ||
-                               (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
-        if (isForCurrentChat && currentChatUserId) {
-          addMessage(msg, true);
+        var isCurrent = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) || (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
+        if (isCurrent && currentChatUserId) addMessage(msg, true);
+        if (msg.sender_id !== currentUser.id && msg.receiver_id === currentUser.id && (!currentChatUserId || msg.sender_id !== currentChatUserId)) {
+          client.from('users').select('nickname').eq('id', msg.sender_id).single().then(function(r) {
+            var name = (r.data && r.data.nickname) ? r.data.nickname : 'Неизвестный';
+            showLocalNotification(name, msg.text.substring(0, 100));
+          });
         }
-
-        // Уведомление если сообщение не от меня и я не в этом чате
-        if (msg.sender_id !== currentUser.id && msg.receiver_id === currentUser.id) {
-          if (!currentChatUserId || msg.sender_id !== currentChatUserId) {
-            // Получить имя отправителя
-            client.from('users').select('nickname').eq('id', msg.sender_id).single().then(function(r) {
-              var senderName = (r.data && r.data.nickname) ? r.data.nickname : 'Неизвестный';
-              showLocalNotification(senderName, msg.text.substring(0, 100));
-            });
-          }
-        }
-
-        // Обновить контакты
-        if (contactsSection.style.display !== 'none') loadContacts();
+        if (screens.contacts.style.display !== 'none') loadContacts();
       });
-
-      // Realtime для онлайн-статусов
       channel.on('postgres_changes', { event: '*', schema: 'public', table: 'user_presence' }, function() {
-        if (contactsSection.style.display !== 'none') loadContacts();
+        if (screens.contacts.style.display !== 'none') loadContacts();
       });
-
       channel.subscribe();
     }
 
     // === НАСТРОЙКИ ===
-    settingsBtn.addEventListener('click', function() {
-      newPassInput.value = '';
-      newPassConfirm.value = '';
-      passMsg.textContent = '';
+    settingsBtnEl.addEventListener('click', function() {
       notifToggle.checked = areNotificationsEnabled();
+      updateNotifStatus();
       settingsModal.classList.add('active');
     });
-
     settingsClose.addEventListener('click', function() { settingsModal.classList.remove('active'); });
     settingsModal.addEventListener('click', function(e) { if (e.target === settingsModal) settingsModal.classList.remove('active'); });
 
-    passSave.addEventListener('click', async function() {
-      var p1 = newPassInput.value.trim();
-      var p2 = newPassConfirm.value.trim();
-      if (p1.length < 2) { passMsg.textContent = 'Минимум 2 символа'; passMsg.style.color = '#ff00aa'; return; }
-      if (p1 !== p2) { passMsg.textContent = 'Пароли не совпадают!'; passMsg.style.color = '#ff00aa'; return; }
-      try {
-        var result = await client.from('users').update({ password_hash: p1 }).eq('id', currentUser.id).select().single();
-        if (result.error) { passMsg.textContent = 'Ошибка: ' + result.error.message; passMsg.style.color = '#ff00aa'; return; }
-        currentUser.password_hash = p1;
-        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
-        passMsg.textContent = '✅ Пароль сохранён!';
-        passMsg.style.color = '#00ff88';
-        setTimeout(function() { passMsg.textContent = ''; }, 2000);
-      } catch (e) { passMsg.textContent = 'Ошибка: ' + e.message; passMsg.style.color = '#ff00aa'; }
-    });
-
-    newPassConfirm.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); passSave.click(); } });
-
     // === ВЫХОД ===
-    logoutBtn.addEventListener('click', function() {
+    logoutBtn.addEventListener('click', async function() {
       if (presenceInterval) clearInterval(presenceInterval);
-      localStorage.removeItem('messenger_user');
-      location.reload();
+      await client.auth.signOut();
+      currentUser = null;
+      showScreen('login');
     });
 
-    // === АВТО-ВХОД ===
-    var savedUser = localStorage.getItem('messenger_user');
-    if (savedUser) {
-      try {
-        currentUser = JSON.parse(savedUser);
+    // === АВТО-ВХОД (сессия Supabase) ===
+    client.auth.getSession().then(function(result) {
+      if (result.data.session) {
+        currentUser = result.data.session.user;
         enterApp();
-      } catch (e) {
-        localStorage.removeItem('messenger_user');
+      } else {
         showScreen('login');
       }
-    } else {
-      showScreen('login');
-    }
+    });
+
+    client.auth.onAuthStateChange(function(event, session) {
+      if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        enterApp();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        showScreen('login');
+      }
+    });
   </script>
 </body>
 </html>
