@@ -13,9 +13,6 @@
 </head>
 <body>
 
-  <!-- Диагностическая панель -->
-  <div id="diag" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#111;color:#0ff;font-family:monospace;font-size:12px;padding:8px 12px;border-bottom:1px solid #0ff;display:none;"></div>
-
   <section id="login" class="screen">
     <div class="card neon-card">
       <h1 class="neon-title">NEON CHAT</h1>
@@ -50,77 +47,5 @@
   </section>
 
   <script src="app.js"></script>
-
-  <!-- ДИАГНОСТИКА -->
-  <script>
-    (function() {
-      var diag = document.getElementById('diag');
-      var steps = [];
-
-      function log(msg, ok) {
-        steps.push((ok ? '✅ ' : '❌ ') + msg);
-        diag.style.display = 'block';
-        diag.innerHTML = steps.join('<br>');
-      }
-
-      // Шаг 1: DOM готов?
-      log('HTML загружен', true);
-
-      // Шаг 2: Supabase JS доступен?
-      window.addEventListener('load', function() {
-        if (typeof window.supabase !== 'undefined') {
-          log('Supabase JS загружен', true);
-        } else {
-          log('Supabase JS НЕ загружен!', false);
-          return;
-        }
-
-        // Шаг 3: Элементы найдены?
-        var btn = document.getElementById('login-btn');
-        var input = document.getElementById('login-name');
-        if (btn) {
-          log('Кнопка ВОЙТИ найдена', true);
-        } else {
-          log('Кнопка ВОЙТИ НЕ найдена!', false);
-          return;
-        }
-        if (input) {
-          log('Поле имени найдено', true);
-        } else {
-          log('Поле имени НЕ найдено!', false);
-          return;
-        }
-
-        // Шаг 4: app.js определил обработчик?
-        // Проверяем через временный флаг
-        setTimeout(function() {
-          // Пробуем программно кликнуть и смотрим реакцию
-          var testInput = document.getElementById('login-name');
-          if (testInput) {
-            testInput.value = 'ТестДиагностики';
-          }
-
-          // Проверяем, есть ли у кнопки слушатель — косвенно через localStorage
-          var before = localStorage.getItem('messenger_name');
-          if (btn) btn.click();
-          var after = localStorage.getItem('messenger_name');
-
-          if (after && after !== before) {
-            log('Кнопка работает! localStorage обновлён', true);
-            // Возвращаем как было
-            if (before) {
-              localStorage.setItem('messenger_name', before);
-            } else {
-              localStorage.removeItem('messenger_name');
-            }
-            location.reload();
-          } else {
-            log('Кнопка НЕ сработала! app.js не привязал обработчик', false);
-            log('Возможно app.js не загрузился или упал с ошибкой', false);
-          }
-        }, 2000);
-      });
-    })();
-  </script>
 </body>
 </html>
