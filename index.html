@@ -110,6 +110,7 @@
 
       var userName = localStorage.getItem('messenger_name') || '';
       var seenMessages = {};
+      var realtimeStarted = false;
 
       if (loginBtn) {
         loginBtn.addEventListener('click', function() {
@@ -142,7 +143,10 @@
         if (loginSection) loginSection.hidden = true;
         if (chatSection) chatSection.hidden = false;
         if (who) who.textContent = userName;
-        initRealtime();
+        if (!realtimeStarted) {
+          realtimeStarted = true;
+          initRealtime();
+        }
         loadMessages();
       }
 
@@ -196,26 +200,4 @@
 
       function initRealtime() {
         try {
-          client.channel('messages-inserts')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function(payload) {
-              if (payload && payload.new) addMessage(payload.new, true);
-            })
-            .subscribe();
-        } catch (e) { console.error(e); }
-      }
-
-      function scrollToBottom() {
-        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
-      }
-
-      if (userName && userName.length >= 2) {
-        if (loginName) loginName.value = userName;
-        showChat();
-      } else {
-        if (loginSection) loginSection.hidden = false;
-        if (chatSection) chatSection.hidden = true;
-      }
-    });
-  </script>
-</body>
-</html>
+          client.channel('messages-insert
