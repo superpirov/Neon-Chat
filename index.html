@@ -16,7 +16,6 @@
       --neon-cyan: #00f0ff;
       --neon-pink: #ff00aa;
       --neon-green: #00ff88;
-      --neon-yellow: #ffe600;
       --text: #e0e0e0;
       --text-dim: #6a6a8a;
       --border: rgba(0, 240, 255, 0.15);
@@ -46,7 +45,7 @@
     .login-toggle { text-align: center; color: var(--text-dim); font-size: 13px; cursor: pointer; }
     .login-toggle span { color: var(--neon-cyan); text-decoration: underline; }
 
-    /* === CONTACTS LIST === */
+    /* === HEADER === */
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
     .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
@@ -55,7 +54,10 @@
     .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
     .settings-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
     .settings-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); text-shadow: var(--glow-cyan); }
+    .add-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-green); }
+    .add-btn:hover { background: var(--neon-green); color: var(--bg); }
 
+    /* === CONTACTS === */
     #contacts-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
     #contacts-list::-webkit-scrollbar { width: 4px; }
     #contacts-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
@@ -66,7 +68,7 @@
     .contact-name { font-size: 16px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .contact-last-msg { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
     .contact-time { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
-    .no-contacts { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 14px; }
+    .no-contacts { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 14px; line-height: 1.6; }
 
     /* === CHAT === */
     #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
@@ -126,6 +128,7 @@
         <p class="user-label">▸ <span id="who"></span></p>
       </div>
       <div class="header-buttons">
+        <button id="add-contact-btn" class="add-btn">+ Добавить</button>
         <button id="settings-btn" class="settings-btn" title="Сменить пароль">⚙️</button>
         <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
       </div>
@@ -150,17 +153,31 @@
     </form>
   </section>
 
-  <!-- МОДАЛЬНОЕ ОКНО СМЕНЫ ПАРОЛЯ -->
-  <div id="modal-overlay" class="modal-overlay">
+  <!-- МОДАЛКА: ДОБАВИТЬ КОНТАКТ -->
+  <div id="add-modal" class="modal-overlay">
+    <div class="modal">
+      <h3>+ ДОБАВИТЬ КОНТАКТ</h3>
+      <p>Введи никнейм человека</p>
+      <input id="add-nickname" placeholder="Никнейм" maxlength="30" autocomplete="off">
+      <p id="add-msg" class="modal-msg"></p>
+      <div class="modal-buttons">
+        <button id="add-cancel" class="btn-cancel">ОТМЕНА</button>
+        <button id="add-save" class="btn-save">ДОБАВИТЬ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА: СМЕНА ПАРОЛЯ -->
+  <div id="pass-modal" class="modal-overlay">
     <div class="modal">
       <h3>⚙️ СМЕНА ПАРОЛЯ</h3>
       <p>Введи новый пароль</p>
       <input id="new-pass" type="password" placeholder="Новый пароль" maxlength="50" autocomplete="off">
       <input id="new-pass-confirm" type="password" placeholder="Повтори пароль" maxlength="50" autocomplete="off">
-      <p id="modal-msg" class="modal-msg"></p>
+      <p id="pass-msg" class="modal-msg"></p>
       <div class="modal-buttons">
-        <button id="modal-cancel" class="btn-cancel">ОТМЕНА</button>
-        <button id="modal-save" class="btn-save">СОХРАНИТЬ</button>
+        <button id="pass-cancel" class="btn-cancel">ОТМЕНА</button>
+        <button id="pass-save" class="btn-save">СОХРАНИТЬ</button>
       </div>
     </div>
   </div>
@@ -177,8 +194,8 @@
     var chatSection = document.getElementById('chat');
     var loginBtn = document.getElementById('login-btn');
     var registerBtn = document.getElementById('register-btn');
-    var loginName = document.getElementById('login-name');
-    var loginPass = document.getElementById('login-pass');
+    var loginNameEl = document.getElementById('login-name');
+    var loginPassEl = document.getElementById('login-pass');
     var loginSubtitle = document.getElementById('login-subtitle');
     var toggleLink = document.getElementById('toggle-link');
     var errorMsg = document.getElementById('error-msg');
@@ -191,12 +208,20 @@
     var backBtn = document.getElementById('back-btn');
     var logoutBtn = document.getElementById('logout-btn');
     var settingsBtn = document.getElementById('settings-btn');
-    var modalOverlay = document.getElementById('modal-overlay');
+    var addContactBtn = document.getElementById('add-contact-btn');
+
+    var addModal = document.getElementById('add-modal');
+    var addNickname = document.getElementById('add-nickname');
+    var addMsg = document.getElementById('add-msg');
+    var addCancel = document.getElementById('add-cancel');
+    var addSave = document.getElementById('add-save');
+
+    var passModal = document.getElementById('pass-modal');
     var newPassInput = document.getElementById('new-pass');
     var newPassConfirm = document.getElementById('new-pass-confirm');
-    var modalMsg = document.getElementById('modal-msg');
-    var modalCancel = document.getElementById('modal-cancel');
-    var modalSave = document.getElementById('modal-save');
+    var passMsg = document.getElementById('pass-msg');
+    var passCancel = document.getElementById('pass-cancel');
+    var passSave = document.getElementById('pass-save');
 
     var currentUser = null;
     var currentChatUserId = null;
@@ -234,19 +259,15 @@
 
     // === РЕГИСТРАЦИЯ ===
     registerBtn.addEventListener('click', async function() {
-      var name = loginName.value.trim();
-      var pass = loginPass.value.trim();
+      var name = loginNameEl.value.trim();
+      var pass = loginPassEl.value.trim();
       if (name.length < 2) { showError('Никнейм минимум 2 символа'); return; }
       if (pass.length < 2) { showError('Пароль минимум 2 символа'); return; }
-
       try {
         var result = await client.from('users').insert({ nickname: name, password_hash: pass }).select().single();
         if (result.error) {
-          if (result.error.message.includes('unique') || result.error.code === '23505') {
-            showError('Этот никнейм уже занят!');
-          } else {
-            showError('Ошибка: ' + result.error.message);
-          }
+          if (result.error.code === '23505') { showError('Этот никнейм уже занят!'); }
+          else { showError('Ошибка: ' + result.error.message); }
           return;
         }
         currentUser = result.data;
@@ -257,23 +278,22 @@
 
     // === ВХОД ===
     loginBtn.addEventListener('click', async function() {
-      var name = loginName.value.trim();
-      var pass = loginPass.value.trim();
+      var name = loginNameEl.value.trim();
+      var pass = loginPassEl.value.trim();
       if (name.length < 2) { showError('Введите никнейм'); return; }
       if (pass.length < 1) { showError('Введите пароль'); return; }
-
       try {
         var result = await client.from('users').select('*').eq('nickname', name).single();
         if (result.error || !result.data) { showError('Пользователь не найден'); return; }
-        if (result.data.password_hash !== pass) { showError('❌ Неверный пароль!'); loginPass.value = ''; return; }
+        if (result.data.password_hash !== pass) { showError('❌ Неверный пароль!'); loginPassEl.value = ''; return; }
         currentUser = result.data;
         localStorage.setItem('messenger_user', JSON.stringify(currentUser));
         enterApp();
       } catch (e) { showError('Ошибка: ' + e.message); }
     });
 
-    loginName.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginPass.focus(); } });
-    loginPass.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (isRegisterMode) registerBtn.click(); else loginBtn.click(); } });
+    loginNameEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginPassEl.focus(); } });
+    loginPassEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (isRegisterMode) registerBtn.click(); else loginBtn.click(); } });
 
     function enterApp() {
       who.textContent = currentUser.nickname;
@@ -282,27 +302,33 @@
       startRealtime();
     }
 
-    // === КОНТАКТЫ ===
+    // === КОНТАКТЫ (только добавленные) ===
     async function loadContacts() {
       contactsList.innerHTML = '<div class="no-contacts">Загрузка...</div>';
       try {
-        var result = await client.from('users').select('*').neq('id', currentUser.id).order('nickname', { ascending: true });
-        if (result.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка загрузки</div>'; return; }
-        if (!result.data || result.data.length === 0) {
-          contactsList.innerHTML = '<div class="no-contacts">Пока нет других пользователей.<br>Отправь ссылку родственникам — они зарегистрируются и появятся здесь.</div>';
+        // Получаем ID добавленных контактов
+        var contactsResult = await client.from('contacts').select('contact_id').eq('user_id', currentUser.id);
+        if (contactsResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка загрузки</div>'; return; }
+
+        if (!contactsResult.data || contactsResult.data.length === 0) {
+          contactsList.innerHTML = '<div class="no-contacts">У тебя пока нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b> и введи никнейм человека, которого хочешь добавить.</div>';
           return;
         }
 
-        // Загрузим последнее сообщение для каждого контакта
+        var contactIds = contactsResult.data.map(function(c) { return c.contact_id; });
+
+        // Получаем данные пользователей
+        var usersResult = await client.from('users').select('*').in('id', contactIds).order('nickname', { ascending: true });
+        if (usersResult.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
+
         contactsList.innerHTML = '';
-        for (var i = 0; i < result.data.length; i++) {
-          var user = result.data[i];
+        for (var i = 0; i < usersResult.data.length; i++) {
+          var user = usersResult.data[i];
           var lastMsg = await getLastMessage(user.id);
           var div = document.createElement('div');
           div.className = 'contact-item';
-          div.setAttribute('data-user-id', user.id);
           div.innerHTML =
-            '<div class="contact-avatar">' + user.nickname.charAt(0).toUpperCase() + '</div>' +
+            '<div class="contact-avatar">' + escapeHtml(user.nickname.charAt(0).toUpperCase()) + '</div>' +
             '<div class="contact-info">' +
               '<div class="contact-name">' + escapeHtml(user.nickname) + '</div>' +
               '<div class="contact-last-msg">' + (lastMsg ? escapeHtml(lastMsg.text.substring(0, 40)) : 'Нет сообщений') + '</div>' +
@@ -311,7 +337,7 @@
           div.addEventListener('click', (function(u) { return function() { openChat(u); }; })(user));
           contactsList.appendChild(div);
         }
-      } catch (e) { contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + e.message + '</div>'; }
+      } catch (e) { contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + escapeHtml(e.message) + '</div>'; }
     }
 
     async function getLastMessage(otherUserId) {
@@ -327,15 +353,51 @@
     }
 
     function formatTime(dateStr) {
-      var d = new Date(dateStr);
-      return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      return new Date(dateStr).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     }
 
     function escapeHtml(str) {
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+      var d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
     }
+
+    // === ДОБАВИТЬ КОНТАКТ ===
+    addContactBtn.addEventListener('click', function() {
+      addNickname.value = '';
+      addMsg.textContent = '';
+      addModal.classList.add('active');
+      addNickname.focus();
+    });
+
+    addCancel.addEventListener('click', function() { addModal.classList.remove('active'); });
+    addModal.addEventListener('click', function(e) { if (e.target === addModal) addModal.classList.remove('active'); });
+
+    addSave.addEventListener('click', async function() {
+      var nickname = addNickname.value.trim();
+      if (nickname.length < 2) { addMsg.textContent = 'Введи никнейм'; addMsg.style.color = '#ff00aa'; return; }
+      if (nickname === currentUser.nickname) { addMsg.textContent = 'Нельзя добавить себя'; addMsg.style.color = '#ff00aa'; return; }
+
+      try {
+        // Найти пользователя по никнейму
+        var userResult = await client.from('users').select('id').eq('nickname', nickname).single();
+        if (userResult.error || !userResult.data) { addMsg.textContent = 'Пользователь не найден'; addMsg.style.color = '#ff00aa'; return; }
+
+        // Проверить, не добавлен ли уже
+        var existResult = await client.from('contacts').select('id').eq('user_id', currentUser.id).eq('contact_id', userResult.data.id).single();
+        if (existResult.data) { addMsg.textContent = 'Уже в контактах!'; addMsg.style.color = '#ffe600'; return; }
+
+        // Добавить
+        var insertResult = await client.from('contacts').insert({ user_id: currentUser.id, contact_id: userResult.data.id }).select().single();
+        if (insertResult.error) { addMsg.textContent = 'Ошибка: ' + insertResult.error.message; addMsg.style.color = '#ff00aa'; return; }
+
+        addMsg.textContent = '✅ Добавлен!';
+        addMsg.style.color = '#00ff88';
+        setTimeout(function() { addModal.classList.remove('active'); loadContacts(); }, 1000);
+      } catch (e) { addMsg.textContent = 'Ошибка: ' + e.message; addMsg.style.color = '#ff00aa'; }
+    });
+
+    addNickname.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); addSave.click(); } });
 
     // === ОТКРЫТЬ ЧАТ ===
     function openChat(user) {
@@ -408,19 +470,14 @@
     // === REALTIME ===
     function startRealtime() {
       if (channel) return;
-      channel = client.channel('neon-private-messages');
+      channel = client.channel('neon-private-v2');
       channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, function(payload) {
         if (!payload || !payload.new) return;
         var msg = payload.new;
         var isForMe = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) ||
                       (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
-        if (isForMe && currentChatUserId) {
-          addMessage(msg, true);
-        }
-        // Обновить список контактов если мы на экране контактов
-        if (contactsSection.style.display !== 'none') {
-          loadContacts();
-        }
+        if (isForMe && currentChatUserId) addMessage(msg, true);
+        if (contactsSection.style.display !== 'none') loadContacts();
       });
       channel.subscribe();
     }
@@ -435,31 +492,31 @@
     settingsBtn.addEventListener('click', function() {
       newPassInput.value = '';
       newPassConfirm.value = '';
-      modalMsg.textContent = '';
-      modalOverlay.classList.add('active');
+      passMsg.textContent = '';
+      passModal.classList.add('active');
       newPassInput.focus();
     });
 
-    modalCancel.addEventListener('click', function() { modalOverlay.classList.remove('active'); });
-    modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
+    passCancel.addEventListener('click', function() { passModal.classList.remove('active'); });
+    passModal.addEventListener('click', function(e) { if (e.target === passModal) passModal.classList.remove('active'); });
 
-    modalSave.addEventListener('click', async function() {
+    passSave.addEventListener('click', async function() {
       var p1 = newPassInput.value.trim();
       var p2 = newPassConfirm.value.trim();
-      if (p1.length < 2) { modalMsg.textContent = 'Минимум 2 символа'; modalMsg.style.color = '#ff00aa'; return; }
-      if (p1 !== p2) { modalMsg.textContent = 'Пароли не совпадают!'; modalMsg.style.color = '#ff00aa'; return; }
+      if (p1.length < 2) { passMsg.textContent = 'Минимум 2 символа'; passMsg.style.color = '#ff00aa'; return; }
+      if (p1 !== p2) { passMsg.textContent = 'Пароли не совпадают!'; passMsg.style.color = '#ff00aa'; return; }
       try {
         var result = await client.from('users').update({ password_hash: p1 }).eq('id', currentUser.id).select().single();
-        if (result.error) { modalMsg.textContent = 'Ошибка: ' + result.error.message; modalMsg.style.color = '#ff00aa'; return; }
+        if (result.error) { passMsg.textContent = 'Ошибка: ' + result.error.message; passMsg.style.color = '#ff00aa'; return; }
         currentUser.password_hash = p1;
         localStorage.setItem('messenger_user', JSON.stringify(currentUser));
-        modalMsg.textContent = '✅ Пароль сохранён!';
-        modalMsg.style.color = '#00ff88';
-        setTimeout(function() { modalOverlay.classList.remove('active'); }, 1500);
-      } catch (e) { modalMsg.textContent = 'Ошибка: ' + e.message; modalMsg.style.color = '#ff00aa'; }
+        passMsg.textContent = '✅ Пароль сохранён!';
+        passMsg.style.color = '#00ff88';
+        setTimeout(function() { passModal.classList.remove('active'); }, 1500);
+      } catch (e) { passMsg.textContent = 'Ошибка: ' + e.message; passMsg.style.color = '#ff00aa'; }
     });
 
-    newPassConfirm.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); modalSave.click(); } });
+    newPassConfirm.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); passSave.click(); } });
 
     // === АВТО-ВХОД ===
     var savedUser = localStorage.getItem('messenger_user');
