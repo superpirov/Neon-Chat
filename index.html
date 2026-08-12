@@ -36,11 +36,15 @@
     .neon-btn { padding: 14px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-cyan); }
     .neon-btn:hover, .neon-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
     .error-text { color: var(--neon-pink); text-align: center; font-size: 13px; text-shadow: var(--glow-pink); min-height: 20px; }
+    .success-text { color: var(--neon-green); text-align: center; font-size: 13px; text-shadow: 0 0 8px rgba(0,255,136,0.4); min-height: 20px; }
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
     .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .header-buttons { display: flex; gap: 8px; }
     .ghost-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'Rajdhani', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.3s ease; }
     .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
+    .settings-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
+    .settings-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); text-shadow: var(--glow-cyan); }
     #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
     #messages::-webkit-scrollbar { width: 4px; }
     #messages::-webkit-scrollbar-track { background: transparent; }
@@ -56,10 +60,25 @@
     .send-btn { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-size: 18px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .send-btn:hover, .send-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
     .lock-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+
+    /* Модальное окно настроек */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: grid; gap: 14px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
+    .modal h3 { font-family: 'Orbitron', sans-serif; font-size: 18px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); text-align: center; letter-spacing: 2px; }
+    .modal p { color: var(--text-dim); font-size: 13px; text-align: center; }
+    .modal-buttons { display: flex; gap: 10px; }
+    .modal-buttons button { flex: 1; }
+    .btn-cancel { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'Rajdhani', sans-serif; font-size: 14px; cursor: pointer; }
+    .btn-cancel:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
+    .btn-save { padding: 12px; border-radius: 10px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .btn-save:hover { background: var(--neon-green); color: var(--bg); }
+    .modal-msg { text-align: center; font-size: 13px; min-height: 18px; }
   </style>
 </head>
 <body>
 
+  <!-- ЭКРАН ВХОДА -->
   <section id="login" class="screen">
     <div class="card neon-card">
       <div class="lock-icon">🔒</div>
@@ -72,13 +91,17 @@
     </div>
   </section>
 
+  <!-- ЭКРАН ЧАТА -->
   <section id="chat" class="screen" style="display:none;">
     <header class="neon-header">
       <div>
         <h2 class="neon-title-sm">NEON CHAT</h2>
         <p class="user-label">▸ <span id="who"></span></p>
       </div>
-      <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
+      <div class="header-buttons">
+        <button id="settings-btn" class="settings-btn" title="Сменить пароль">⚙️</button>
+        <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
+      </div>
     </header>
     <main id="messages"></main>
     <form id="chat-form" class="neon-form">
@@ -87,12 +110,27 @@
     </form>
   </section>
 
+  <!-- МОДАЛЬНОЕ ОКНО СМЕНЫ ПАРОЛЯ -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal">
+      <h3>⚙️ СМЕНА ПАРОЛЯ</h3>
+      <p>Введи новый пароль для входа</p>
+      <input id="new-pass" type="password" placeholder="Новый пароль" maxlength="50" autocomplete="off">
+      <input id="new-pass-confirm" type="password" placeholder="Повтори новый пароль" maxlength="50" autocomplete="off">
+      <p id="modal-msg" class="modal-msg"></p>
+      <div class="modal-buttons">
+        <button id="modal-cancel" class="btn-cancel">ОТМЕНА</button>
+        <button id="modal-save" class="btn-save">СОХРАНИТЬ</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ============================================
-    // ПАРОЛЬ ДЛЯ ВХОДА В ЧАТ
-    // Измени на свой пароль и сообщи его родственникам
+    // ОБЩИЙ ПАРОЛЬ ПО УМОЛЧАНИЮ
+    // Сообщите его родственникам для первого входа
     // ============================================
-    var CHAT_PASSWORD = 'neon2025';
+    var DEFAULT_PASSWORD = 'neon2025';
     // ============================================
 
     var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
@@ -103,12 +141,19 @@
     var loginName = document.getElementById('login-name');
     var loginPass = document.getElementById('login-pass');
     var logoutBtn = document.getElementById('logout-btn');
+    var settingsBtn = document.getElementById('settings-btn');
     var who = document.getElementById('who');
     var messagesEl = document.getElementById('messages');
     var form = document.getElementById('chat-form');
     var textInput = document.getElementById('text');
     var loginSection = document.getElementById('login');
     var chatSection = document.getElementById('chat');
+    var modalOverlay = document.getElementById('modal-overlay');
+    var newPassInput = document.getElementById('new-pass');
+    var newPassConfirm = document.getElementById('new-pass-confirm');
+    var modalMsg = document.getElementById('modal-msg');
+    var modalCancel = document.getElementById('modal-cancel');
+    var modalSave = document.getElementById('modal-save');
 
     var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     var userName = localStorage.getItem('messenger_name') || '';
@@ -116,13 +161,13 @@
     var seenMessages = {};
     var channel = null;
 
-    function showError(msg) {
-      errorMsg.textContent = msg;
+    // Получить пароль пользователя: личный или общий
+    function getUserPassword() {
+      return localStorage.getItem('messenger_password') || DEFAULT_PASSWORD;
     }
 
-    function hideError() {
-      errorMsg.textContent = '';
-    }
+    function showError(msg) { errorMsg.textContent = msg; }
+    function hideError() { errorMsg.textContent = ''; }
 
     function showChat() {
       loginSection.style.display = 'none';
@@ -183,13 +228,20 @@
       if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    // === ВХОД ===
     loginBtn.addEventListener('click', function() {
       var name = loginName.value.trim();
       var pass = loginPass.value.trim();
-
       if (name.length < 2) { showError('Введите никнейм (минимум 2 символа)'); return; }
       if (pass.length < 1) { showError('Введите пароль'); return; }
-      if (pass !== CHAT_PASSWORD) { showError('❌ Неверный пароль!'); loginPass.value = ''; return; }
+
+      // Проверяем: совпадает ли введённый пароль с личным или общим
+      var savedPass = getUserPassword();
+      if (pass !== savedPass && pass !== DEFAULT_PASSWORD) {
+        showError('❌ Неверный пароль!');
+        loginPass.value = '';
+        return;
+      }
 
       hideError();
       userName = name;
@@ -206,12 +258,60 @@
       if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); }
     });
 
+    // === ВЫХОД ===
     logoutBtn.addEventListener('click', function() {
       localStorage.removeItem('messenger_name');
       localStorage.removeItem('messenger_auth');
       location.reload();
     });
 
+    // === НАСТРОЙКИ / СМЕНА ПАРОЛЯ ===
+    settingsBtn.addEventListener('click', function() {
+      newPassInput.value = '';
+      newPassConfirm.value = '';
+      modalMsg.textContent = '';
+      modalMsg.style.color = '';
+      modalOverlay.classList.add('active');
+      newPassInput.focus();
+    });
+
+    modalCancel.addEventListener('click', function() {
+      modalOverlay.classList.remove('active');
+    });
+
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+    });
+
+    modalSave.addEventListener('click', function() {
+      var p1 = newPassInput.value.trim();
+      var p2 = newPassConfirm.value.trim();
+
+      if (p1.length < 2) {
+        modalMsg.textContent = 'Пароль минимум 2 символа';
+        modalMsg.style.color = '#ff00aa';
+        return;
+      }
+      if (p1 !== p2) {
+        modalMsg.textContent = 'Пароли не совпадают!';
+        modalMsg.style.color = '#ff00aa';
+        return;
+      }
+
+      localStorage.setItem('messenger_password', p1);
+      modalMsg.textContent = '✅ Пароль сохранён!';
+      modalMsg.style.color = '#00ff88';
+
+      setTimeout(function() {
+        modalOverlay.classList.remove('active');
+      }, 1500);
+    });
+
+    newPassConfirm.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); modalSave.click(); }
+    });
+
+    // === ОТПРАВКА СООБЩЕНИЯ ===
     form.addEventListener('submit', async function(event) {
       event.preventDefault();
       var text = textInput.value.trim();
@@ -223,7 +323,7 @@
       } catch (e) { showError('Ошибка: ' + e.message); }
     });
 
-    // Авто-вход только если пароль был подтверждён ранее
+    // === АВТО-ВХОД ===
     if (userName && userName.length >= 2 && userAuth === 'ok') {
       loginName.value = userName;
       showChat();
