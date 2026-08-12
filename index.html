@@ -8,8 +8,54 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card-bg: rgba(15, 15, 25, 0.9);
+      --neon-cyan: #00f0ff;
+      --neon-pink: #ff00aa;
+      --neon-green: #00ff88;
+      --text: #e0e0e0;
+      --text-dim: #6a6a8a;
+      --border: rgba(0, 240, 255, 0.15);
+      --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 30px rgba(0, 240, 255, 0.1);
+      --glow-pink: 0 0 10px rgba(255, 0, 170, 0.4), 0 0 30px rgba(255, 0, 170, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+    .screen { position: relative; z-index: 1; height: 100dvh; display: flex; flex-direction: column; }
+    #login { align-items: center; justify-content: center; padding: 20px; }
+    .neon-card { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; display: grid; gap: 16px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
+    .neon-title { font-family: 'Orbitron', sans-serif; font-size: 28px; text-align: center; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 3px; }
+    .subtitle { text-align: center; color: var(--text-dim); font-size: 14px; letter-spacing: 1px; }
+    input { width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,240,255,0.05); color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif; font-size: 16px; outline: none; transition: all 0.3s ease; }
+    input::placeholder { color: var(--text-dim); }
+    input:focus { border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); background: rgba(0,240,255,0.08); }
+    .neon-btn { padding: 14px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-cyan); }
+    .neon-btn:hover, .neon-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
+    .error-text { color: var(--neon-pink); text-align: center; font-size: 13px; text-shadow: var(--glow-pink); }
+    .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
+    .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
+    .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .ghost-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'Rajdhani', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.3s ease; }
+    .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
+    #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+    .message { max-width: 85%; padding: 12px 14px; border-radius: 14px; background: rgba(0,240,255,0.06); border: 1px solid var(--border); word-break: break-word; animation: msgIn 0.3s ease; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .message .meta { font-size: 11px; color: var(--neon-green); margin-bottom: 6px; letter-spacing: 0.5px; text-shadow: 0 0 6px rgba(0,255,136,0.3); }
+    .message .text-content { color: var(--text); font-size: 15px; line-height: 1.4; }
+    .message.mine { align-self: flex-end; border-color: rgba(255,0,170,0.2); background: rgba(255,0,170,0.06); }
+    .message.mine .meta { color: var(--neon-pink); text-shadow: 0 0 6px rgba(255,0,170,0.3); }
+    .neon-form { display: flex; gap: 10px; padding: 12px; background: rgba(10,10,15,0.95); border-top: 1px solid var(--border); backdrop-filter: blur(10px); }
+    .neon-form input { flex: 1; }
+    .send-btn { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-size: 18px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn:hover, .send-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
+  </style>
 </head>
 <body>
 
@@ -31,21 +77,145 @@
       </div>
       <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
     </header>
-
     <main id="messages"></main>
-
     <form id="chat-form" class="neon-form">
-      <input
-        id="text"
-        placeholder="Напиши сообщение..."
-        autocomplete="off"
-        maxlength="1000"
-        required
-      >
+      <input id="text" placeholder="Напиши сообщение..." autocomplete="off" maxlength="1000" required>
       <button type="submit" class="send-btn">➤</button>
     </form>
   </section>
 
-  <script src="app.js"></script>
+  <script>
+    var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var errorMsg = document.getElementById('error-msg');
+      var loginBtn = document.getElementById('login-btn');
+      var loginName = document.getElementById('login-name');
+      var logoutBtn = document.getElementById('logout-btn');
+      var who = document.getElementById('who');
+      var messagesEl = document.getElementById('messages');
+      var form = document.getElementById('chat-form');
+      var textInput = document.getElementById('text');
+      var loginSection = document.getElementById('login');
+      var chatSection = document.getElementById('chat');
+
+      var client;
+      try {
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (e) {
+        if (errorMsg) { errorMsg.textContent = 'Ошибка Supabase: ' + e.message; errorMsg.hidden = false; }
+        return;
+      }
+
+      var userName = localStorage.getItem('messenger_name') || '';
+      var seenMessages = {};
+
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function() {
+          var name = loginName.value.trim();
+          if (name.length < 2) {
+            if (errorMsg) { errorMsg.textContent = 'Введите имя (минимум 2 символа)'; errorMsg.hidden = false; }
+            return;
+          }
+          if (errorMsg) errorMsg.hidden = true;
+          userName = name;
+          localStorage.setItem('messenger_name', userName);
+          showChat();
+        });
+      }
+
+      if (loginName) {
+        loginName.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') { e.preventDefault(); if (loginBtn) loginBtn.click(); }
+        });
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('messenger_name');
+          location.reload();
+        });
+      }
+
+      function showChat() {
+        if (loginSection) loginSection.hidden = true;
+        if (chatSection) chatSection.hidden = false;
+        if (who) who.textContent = userName;
+        initRealtime();
+        loadMessages();
+      }
+
+      async function loadMessages() {
+        if (!messagesEl) return;
+        messagesEl.innerHTML = '';
+        seenMessages = {};
+        try {
+          var result = await client.from('messages').select('*').order('created_at', { ascending: true }).limit(200);
+          if (result.error) { console.error(result.error); return; }
+          if (result.data) {
+            for (var i = 0; i < result.data.length; i++) addMessage(result.data[i], false);
+          }
+        } catch (e) { console.error(e); }
+        scrollToBottom();
+      }
+
+      function addMessage(message, scroll) {
+        if (!message || !messagesEl) return;
+        if (seenMessages[message.id]) return;
+        seenMessages[message.id] = true;
+        var div = document.createElement('div');
+        div.className = 'message';
+        if (message.user_name === userName) div.classList.add('mine');
+        var meta = document.createElement('div');
+        meta.className = 'meta';
+        var time = new Date(message.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        meta.textContent = message.user_name + ' \u00b7 ' + time;
+        var text = document.createElement('div');
+        text.className = 'text-content';
+        text.textContent = message.text;
+        div.appendChild(meta);
+        div.appendChild(text);
+        messagesEl.appendChild(div);
+        if (scroll !== false) scrollToBottom();
+      }
+
+      if (form) {
+        form.addEventListener('submit', async function(event) {
+          event.preventDefault();
+          if (!textInput) return;
+          var text = textInput.value.trim();
+          if (!text) return;
+          try {
+            var result = await client.from('messages').insert({ user_name: userName, text: text }).select().single();
+            if (result.error) { console.error(result.error); return; }
+            if (result.data) { textInput.value = ''; addMessage(result.data, true); }
+          } catch (e) { console.error(e); }
+        });
+      }
+
+      function initRealtime() {
+        try {
+          client.channel('messages-inserts')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function(payload) {
+              if (payload && payload.new) addMessage(payload.new, true);
+            })
+            .subscribe();
+        } catch (e) { console.error(e); }
+      }
+
+      function scrollToBottom() {
+        if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      if (userName && userName.length >= 2) {
+        if (loginName) loginName.value = userName;
+        showChat();
+      } else {
+        if (loginSection) loginSection.hidden = false;
+        if (chatSection) chatSection.hidden = true;
+      }
+    });
+  </script>
 </body>
 </html>
