@@ -38,4 +38,200 @@
     .error-text { color: var(--neon-pink); text-align: center; font-size: 13px; text-shadow: var(--glow-pink); min-height: 20px; }
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
-    .user-label { color: var
+    .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
+    .ghost-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: 'Rajdhani', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.3s ease; }
+    .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
+    #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+    .message { max-width: 85%; padding: 12px 14px; border-radius: 14px; background: rgba(0,240,255,0.06); border: 1px solid var(--border); word-break: break-word; animation: msgIn 0.3s ease; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .message .meta { font-size: 11px; color: var(--neon-green); margin-bottom: 6px; letter-spacing: 0.5px; text-shadow: 0 0 6px rgba(0,255,136,0.3); }
+    .message .text-content { color: var(--text); font-size: 15px; line-height: 1.4; }
+    .message.mine { align-self: flex-end; border-color: rgba(255,0,170,0.2); background: rgba(255,0,170,0.06); }
+    .message.mine .meta { color: var(--neon-pink); text-shadow: 0 0 6px rgba(255,0,170,0.3); }
+    .neon-form { display: flex; gap: 10px; padding: 12px; background: rgba(10,10,15,0.95); border-top: 1px solid var(--border); backdrop-filter: blur(10px); }
+    .neon-form input { flex: 1; }
+    .send-btn { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-size: 18px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn:hover, .send-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
+    .lock-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <section id="login" class="screen">
+    <div class="card neon-card">
+      <div class="lock-icon">🔒</div>
+      <h1 class="neon-title">NEON CHAT</h1>
+      <p class="subtitle">Введи никнейм и пароль для входа</p>
+      <input id="login-name" placeholder="Твой никнейм" maxlength="30" autocomplete="off">
+      <input id="login-pass" type="password" placeholder="Пароль" maxlength="50" autocomplete="off">
+      <button id="login-btn" class="neon-btn">ВОЙТИ</button>
+      <p id="error-msg" class="error-text"></p>
+    </div>
+  </section>
+
+  <section id="chat" class="screen" style="display:none;">
+    <header class="neon-header">
+      <div>
+        <h2 class="neon-title-sm">NEON CHAT</h2>
+        <p class="user-label">▸ <span id="who"></span></p>
+      </div>
+      <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
+    </header>
+    <main id="messages"></main>
+    <form id="chat-form" class="neon-form">
+      <input id="text" placeholder="Напиши сообщение..." autocomplete="off" maxlength="1000" required>
+      <button type="submit" class="send-btn">➤</button>
+    </form>
+  </section>
+
+  <script>
+    // ============================================
+    // ПАРОЛЬ ДЛЯ ВХОДА В ЧАТ
+    // Измени на свой пароль и сообщи его родственникам
+    // ============================================
+    var CHAT_PASSWORD = 'neon2025';
+    // ============================================
+
+    var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
+
+    var errorMsg = document.getElementById('error-msg');
+    var loginBtn = document.getElementById('login-btn');
+    var loginName = document.getElementById('login-name');
+    var loginPass = document.getElementById('login-pass');
+    var logoutBtn = document.getElementById('logout-btn');
+    var who = document.getElementById('who');
+    var messagesEl = document.getElementById('messages');
+    var form = document.getElementById('chat-form');
+    var textInput = document.getElementById('text');
+    var loginSection = document.getElementById('login');
+    var chatSection = document.getElementById('chat');
+
+    var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var userName = localStorage.getItem('messenger_name') || '';
+    var userAuth = localStorage.getItem('messenger_auth') || '';
+    var seenMessages = {};
+    var channel = null;
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+    }
+
+    function hideError() {
+      errorMsg.textContent = '';
+    }
+
+    function showChat() {
+      loginSection.style.display = 'none';
+      chatSection.style.display = 'flex';
+      who.textContent = userName;
+      startRealtime();
+      loadMessages();
+    }
+
+    function showLogin() {
+      loginSection.style.display = 'flex';
+      chatSection.style.display = 'none';
+    }
+
+    function startRealtime() {
+      if (channel) return;
+      channel = client.channel('neon-chat-messages');
+      channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function(payload) {
+        if (payload && payload.new) addMessage(payload.new, true);
+      });
+      channel.subscribe();
+    }
+
+    async function loadMessages() {
+      messagesEl.innerHTML = '';
+      seenMessages = {};
+      try {
+        var result = await client.from('messages').select('*').order('created_at', { ascending: true }).limit(200);
+        if (result.error) { showError('Ошибка загрузки: ' + result.error.message); return; }
+        if (result.data) {
+          for (var i = 0; i < result.data.length; i++) addMessage(result.data[i], false);
+        }
+      } catch (e) { showError('Ошибка: ' + e.message); }
+      scrollToBottom();
+    }
+
+    function addMessage(message, scroll) {
+      if (!message || !messagesEl) return;
+      if (seenMessages[message.id]) return;
+      seenMessages[message.id] = true;
+      var div = document.createElement('div');
+      div.className = 'message';
+      if (message.user_name === userName) div.classList.add('mine');
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var time = new Date(message.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      meta.textContent = message.user_name + ' \u00b7 ' + time;
+      var text = document.createElement('div');
+      text.className = 'text-content';
+      text.textContent = message.text;
+      div.appendChild(meta);
+      div.appendChild(text);
+      messagesEl.appendChild(div);
+      if (scroll !== false) scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    loginBtn.addEventListener('click', function() {
+      var name = loginName.value.trim();
+      var pass = loginPass.value.trim();
+
+      if (name.length < 2) { showError('Введите никнейм (минимум 2 символа)'); return; }
+      if (pass.length < 1) { showError('Введите пароль'); return; }
+      if (pass !== CHAT_PASSWORD) { showError('❌ Неверный пароль!'); loginPass.value = ''; return; }
+
+      hideError();
+      userName = name;
+      localStorage.setItem('messenger_name', userName);
+      localStorage.setItem('messenger_auth', 'ok');
+      showChat();
+    });
+
+    loginName.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); loginPass.focus(); }
+    });
+
+    loginPass.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); }
+    });
+
+    logoutBtn.addEventListener('click', function() {
+      localStorage.removeItem('messenger_name');
+      localStorage.removeItem('messenger_auth');
+      location.reload();
+    });
+
+    form.addEventListener('submit', async function(event) {
+      event.preventDefault();
+      var text = textInput.value.trim();
+      if (!text) return;
+      try {
+        var result = await client.from('messages').insert({ user_name: userName, text: text }).select().single();
+        if (result.error) { showError('Ошибка отправки: ' + result.error.message); return; }
+        if (result.data) { textInput.value = ''; addMessage(result.data, true); }
+      } catch (e) { showError('Ошибка: ' + e.message); }
+    });
+
+    // Авто-вход только если пароль был подтверждён ранее
+    if (userName && userName.length >= 2 && userAuth === 'ok') {
+      loginName.value = userName;
+      showChat();
+    } else {
+      localStorage.removeItem('messenger_name');
+      localStorage.removeItem('messenger_auth');
+      showLogin();
+    }
+  </script>
+</body>
+</html>
