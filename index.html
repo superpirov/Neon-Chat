@@ -16,16 +16,20 @@
       --neon-cyan: #00f0ff;
       --neon-pink: #ff00aa;
       --neon-green: #00ff88;
+      --neon-yellow: #ffe600;
       --text: #e0e0e0;
       --text-dim: #6a6a8a;
       --border: rgba(0, 240, 255, 0.15);
       --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 30px rgba(0, 240, 255, 0.1);
       --glow-pink: 0 0 10px rgba(255, 0, 170, 0.4), 0 0 30px rgba(255, 0, 170, 0.1);
+      --glow-green: 0 0 10px rgba(0, 255, 136, 0.4), 0 0 30px rgba(0, 255, 136, 0.1);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow: hidden; }
     body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
     .screen { position: relative; z-index: 1; height: 100dvh; display: flex; flex-direction: column; }
+
+    /* === LOGIN === */
     #login { align-items: center; justify-content: center; padding: 20px; }
     .neon-card { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; display: grid; gap: 16px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
     .neon-title { font-family: 'Orbitron', sans-serif; font-size: 28px; text-align: center; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 3px; }
@@ -35,8 +39,14 @@
     input:focus { border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); background: rgba(0,240,255,0.08); }
     .neon-btn { padding: 14px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-cyan); }
     .neon-btn:hover, .neon-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
+    .btn-secondary { padding: 14px; border-radius: 10px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-shadow: var(--glow-green); }
+    .btn-secondary:hover { background: var(--neon-green); color: var(--bg); }
     .error-text { color: var(--neon-pink); text-align: center; font-size: 13px; text-shadow: var(--glow-pink); min-height: 20px; }
-    .success-text { color: var(--neon-green); text-align: center; font-size: 13px; text-shadow: 0 0 8px rgba(0,255,136,0.4); min-height: 20px; }
+    .lock-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+    .login-toggle { text-align: center; color: var(--text-dim); font-size: 13px; cursor: pointer; }
+    .login-toggle span { color: var(--neon-cyan); text-decoration: underline; }
+
+    /* === CONTACTS LIST === */
     .neon-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(10,10,15,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     .neon-title-sm { font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); letter-spacing: 2px; }
     .user-label { color: var(--neon-green); font-size: 13px; margin-top: 2px; text-shadow: 0 0 8px rgba(0,255,136,0.4); }
@@ -45,6 +55,20 @@
     .ghost-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: var(--glow-pink); }
     .settings-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
     .settings-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); text-shadow: var(--glow-cyan); }
+
+    #contacts-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    #contacts-list::-webkit-scrollbar { width: 4px; }
+    #contacts-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+    .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; }
+    .contact-item:hover, .contact-item:active { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); box-shadow: var(--glow-cyan); }
+    .contact-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--neon-cyan); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-size: 16px; color: var(--neon-cyan); text-shadow: var(--glow-cyan); flex-shrink: 0; background: rgba(0,240,255,0.05); }
+    .contact-info { flex: 1; min-width: 0; }
+    .contact-name { font-size: 16px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .contact-last-msg { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .contact-time { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+    .no-contacts { text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 14px; }
+
+    /* === CHAT === */
     #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
     #messages::-webkit-scrollbar { width: 4px; }
     #messages::-webkit-scrollbar-track { background: transparent; }
@@ -59,9 +83,10 @@
     .neon-form input { flex: 1; }
     .send-btn { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--neon-cyan); background: rgba(0,240,255,0.1); color: var(--neon-cyan); font-size: 18px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .send-btn:hover, .send-btn:active { background: var(--neon-cyan); color: var(--bg); box-shadow: var(--glow-cyan); }
-    .lock-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
+    .back-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+    .back-btn:hover { border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); }
 
-    /* Модальное окно настроек */
+    /* === MODAL === */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.active { display: flex; }
     .modal { width: 100%; max-width: 380px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: grid; gap: 14px; backdrop-filter: blur(10px); box-shadow: var(--glow-cyan); }
@@ -78,21 +103,23 @@
 </head>
 <body>
 
-  <!-- ЭКРАН ВХОДА -->
+  <!-- ЭКРАН ВХОДА / РЕГИСТРАЦИИ -->
   <section id="login" class="screen">
     <div class="card neon-card">
       <div class="lock-icon">🔒</div>
       <h1 class="neon-title">NEON CHAT</h1>
-      <p class="subtitle">Введи никнейм и пароль для входа</p>
-      <input id="login-name" placeholder="Твой никнейм" maxlength="30" autocomplete="off">
+      <p class="subtitle" id="login-subtitle">Вход в мессенджер</p>
+      <input id="login-name" placeholder="Никнейм" maxlength="30" autocomplete="off">
       <input id="login-pass" type="password" placeholder="Пароль" maxlength="50" autocomplete="off">
       <button id="login-btn" class="neon-btn">ВОЙТИ</button>
+      <button id="register-btn" class="btn-secondary" style="display:none;">ЗАРЕГИСТРИРОВАТЬСЯ</button>
       <p id="error-msg" class="error-text"></p>
+      <p class="login-toggle" id="toggle-mode">Нет аккаунта? <span id="toggle-link">Зарегистрироваться</span></p>
     </div>
   </section>
 
-  <!-- ЭКРАН ЧАТА -->
-  <section id="chat" class="screen" style="display:none;">
+  <!-- СПИСОК КОНТАКТОВ -->
+  <section id="contacts" class="screen" style="display:none;">
     <header class="neon-header">
       <div>
         <h2 class="neon-title-sm">NEON CHAT</h2>
@@ -101,6 +128,19 @@
       <div class="header-buttons">
         <button id="settings-btn" class="settings-btn" title="Сменить пароль">⚙️</button>
         <button id="logout-btn" class="ghost-btn">ВЫХОД</button>
+      </div>
+    </header>
+    <div id="contacts-list"></div>
+  </section>
+
+  <!-- ЛИЧНЫЙ ЧАТ -->
+  <section id="chat" class="screen" style="display:none;">
+    <header class="neon-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="back-btn" class="back-btn">← Назад</button>
+        <div>
+          <h2 class="neon-title-sm" id="chat-with"></h2>
+        </div>
       </div>
     </header>
     <main id="messages"></main>
@@ -114,9 +154,9 @@
   <div id="modal-overlay" class="modal-overlay">
     <div class="modal">
       <h3>⚙️ СМЕНА ПАРОЛЯ</h3>
-      <p>Введи новый пароль для входа</p>
+      <p>Введи новый пароль</p>
       <input id="new-pass" type="password" placeholder="Новый пароль" maxlength="50" autocomplete="off">
-      <input id="new-pass-confirm" type="password" placeholder="Повтори новый пароль" maxlength="50" autocomplete="off">
+      <input id="new-pass-confirm" type="password" placeholder="Повтори пароль" maxlength="50" autocomplete="off">
       <p id="modal-msg" class="modal-msg"></p>
       <div class="modal-buttons">
         <button id="modal-cancel" class="btn-cancel">ОТМЕНА</button>
@@ -126,28 +166,31 @@
   </div>
 
   <script>
-    // ============================================
-    // ОБЩИЙ ПАРОЛЬ ПО УМОЛЧАНИЮ
-    // Сообщите его родственникам для первого входа
-    // ============================================
-    var DEFAULT_PASSWORD = 'neon2025';
-    // ============================================
-
     var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
 
-    var errorMsg = document.getElementById('error-msg');
+    var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Элементы
+    var loginSection = document.getElementById('login');
+    var contactsSection = document.getElementById('contacts');
+    var chatSection = document.getElementById('chat');
     var loginBtn = document.getElementById('login-btn');
+    var registerBtn = document.getElementById('register-btn');
     var loginName = document.getElementById('login-name');
     var loginPass = document.getElementById('login-pass');
-    var logoutBtn = document.getElementById('logout-btn');
-    var settingsBtn = document.getElementById('settings-btn');
+    var loginSubtitle = document.getElementById('login-subtitle');
+    var toggleLink = document.getElementById('toggle-link');
+    var errorMsg = document.getElementById('error-msg');
     var who = document.getElementById('who');
+    var contactsList = document.getElementById('contacts-list');
     var messagesEl = document.getElementById('messages');
     var form = document.getElementById('chat-form');
     var textInput = document.getElementById('text');
-    var loginSection = document.getElementById('login');
-    var chatSection = document.getElementById('chat');
+    var chatWith = document.getElementById('chat-with');
+    var backBtn = document.getElementById('back-btn');
+    var logoutBtn = document.getElementById('logout-btn');
+    var settingsBtn = document.getElementById('settings-btn');
     var modalOverlay = document.getElementById('modal-overlay');
     var newPassInput = document.getElementById('new-pass');
     var newPassConfirm = document.getElementById('new-pass-confirm');
@@ -155,52 +198,173 @@
     var modalCancel = document.getElementById('modal-cancel');
     var modalSave = document.getElementById('modal-save');
 
-    var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    var userName = localStorage.getItem('messenger_name') || '';
-    var userAuth = localStorage.getItem('messenger_auth') || '';
+    var currentUser = null;
+    var currentChatUserId = null;
     var seenMessages = {};
     var channel = null;
-
-    // Получить пароль пользователя: личный или общий
-    function getUserPassword() {
-      return localStorage.getItem('messenger_password') || DEFAULT_PASSWORD;
-    }
+    var isRegisterMode = false;
 
     function showError(msg) { errorMsg.textContent = msg; }
     function hideError() { errorMsg.textContent = ''; }
 
-    function showChat() {
-      loginSection.style.display = 'none';
-      chatSection.style.display = 'flex';
-      who.textContent = userName;
-      startRealtime();
-      loadMessages();
+    function showScreen(name) {
+      loginSection.style.display = name === 'login' ? 'flex' : 'none';
+      contactsSection.style.display = name === 'contacts' ? 'flex' : 'none';
+      chatSection.style.display = name === 'chat' ? 'flex' : 'none';
     }
 
-    function showLogin() {
-      loginSection.style.display = 'flex';
-      chatSection.style.display = 'none';
-    }
+    // === ПЕРЕКЛЮЧЕНИЕ ВХОД / РЕГИСТРАЦИЯ ===
+    toggleLink.addEventListener('click', function() {
+      isRegisterMode = !isRegisterMode;
+      if (isRegisterMode) {
+        loginSubtitle.textContent = 'Регистрация';
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'block';
+        toggleLink.textContent = 'Войти';
+        document.querySelector('.login-toggle').childNodes[0].textContent = 'Уже есть аккаунт? ';
+      } else {
+        loginSubtitle.textContent = 'Вход в мессенджер';
+        loginBtn.style.display = 'block';
+        registerBtn.style.display = 'none';
+        toggleLink.textContent = 'Зарегистрироваться';
+        document.querySelector('.login-toggle').childNodes[0].textContent = 'Нет аккаунта? ';
+      }
+      hideError();
+    });
 
-    function startRealtime() {
-      if (channel) return;
-      channel = client.channel('neon-chat-messages');
-      channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function(payload) {
-        if (payload && payload.new) addMessage(payload.new, true);
-      });
-      channel.subscribe();
-    }
+    // === РЕГИСТРАЦИЯ ===
+    registerBtn.addEventListener('click', async function() {
+      var name = loginName.value.trim();
+      var pass = loginPass.value.trim();
+      if (name.length < 2) { showError('Никнейм минимум 2 символа'); return; }
+      if (pass.length < 2) { showError('Пароль минимум 2 символа'); return; }
 
-    async function loadMessages() {
-      messagesEl.innerHTML = '';
-      seenMessages = {};
       try {
-        var result = await client.from('messages').select('*').order('created_at', { ascending: true }).limit(200);
-        if (result.error) { showError('Ошибка загрузки: ' + result.error.message); return; }
+        var result = await client.from('users').insert({ nickname: name, password_hash: pass }).select().single();
+        if (result.error) {
+          if (result.error.message.includes('unique') || result.error.code === '23505') {
+            showError('Этот никнейм уже занят!');
+          } else {
+            showError('Ошибка: ' + result.error.message);
+          }
+          return;
+        }
+        currentUser = result.data;
+        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
+        enterApp();
+      } catch (e) { showError('Ошибка: ' + e.message); }
+    });
+
+    // === ВХОД ===
+    loginBtn.addEventListener('click', async function() {
+      var name = loginName.value.trim();
+      var pass = loginPass.value.trim();
+      if (name.length < 2) { showError('Введите никнейм'); return; }
+      if (pass.length < 1) { showError('Введите пароль'); return; }
+
+      try {
+        var result = await client.from('users').select('*').eq('nickname', name).single();
+        if (result.error || !result.data) { showError('Пользователь не найден'); return; }
+        if (result.data.password_hash !== pass) { showError('❌ Неверный пароль!'); loginPass.value = ''; return; }
+        currentUser = result.data;
+        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
+        enterApp();
+      } catch (e) { showError('Ошибка: ' + e.message); }
+    });
+
+    loginName.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); loginPass.focus(); } });
+    loginPass.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (isRegisterMode) registerBtn.click(); else loginBtn.click(); } });
+
+    function enterApp() {
+      who.textContent = currentUser.nickname;
+      showScreen('contacts');
+      loadContacts();
+      startRealtime();
+    }
+
+    // === КОНТАКТЫ ===
+    async function loadContacts() {
+      contactsList.innerHTML = '<div class="no-contacts">Загрузка...</div>';
+      try {
+        var result = await client.from('users').select('*').neq('id', currentUser.id).order('nickname', { ascending: true });
+        if (result.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка загрузки</div>'; return; }
+        if (!result.data || result.data.length === 0) {
+          contactsList.innerHTML = '<div class="no-contacts">Пока нет других пользователей.<br>Отправь ссылку родственникам — они зарегистрируются и появятся здесь.</div>';
+          return;
+        }
+
+        // Загрузим последнее сообщение для каждого контакта
+        contactsList.innerHTML = '';
+        for (var i = 0; i < result.data.length; i++) {
+          var user = result.data[i];
+          var lastMsg = await getLastMessage(user.id);
+          var div = document.createElement('div');
+          div.className = 'contact-item';
+          div.setAttribute('data-user-id', user.id);
+          div.innerHTML =
+            '<div class="contact-avatar">' + user.nickname.charAt(0).toUpperCase() + '</div>' +
+            '<div class="contact-info">' +
+              '<div class="contact-name">' + escapeHtml(user.nickname) + '</div>' +
+              '<div class="contact-last-msg">' + (lastMsg ? escapeHtml(lastMsg.text.substring(0, 40)) : 'Нет сообщений') + '</div>' +
+            '</div>' +
+            '<div class="contact-time">' + (lastMsg ? formatTime(lastMsg.created_at) : '') + '</div>';
+          div.addEventListener('click', (function(u) { return function() { openChat(u); }; })(user));
+          contactsList.appendChild(div);
+        }
+      } catch (e) { contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + e.message + '</div>'; }
+    }
+
+    async function getLastMessage(otherUserId) {
+      try {
+        var result = await client.from('private_messages')
+          .select('*')
+          .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + otherUserId + '),and(sender_id.eq.' + otherUserId + ',receiver_id.eq.' + currentUser.id + ')')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (result.data && result.data.length > 0) return result.data[0];
+      } catch (e) {}
+      return null;
+    }
+
+    function formatTime(dateStr) {
+      var d = new Date(dateStr);
+      return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // === ОТКРЫТЬ ЧАТ ===
+    function openChat(user) {
+      currentChatUserId = user.id;
+      chatWith.textContent = user.nickname;
+      showScreen('chat');
+      seenMessages = {};
+      messagesEl.innerHTML = '';
+      loadPrivateMessages();
+    }
+
+    backBtn.addEventListener('click', function() {
+      currentChatUserId = null;
+      showScreen('contacts');
+      loadContacts();
+    });
+
+    async function loadPrivateMessages() {
+      try {
+        var result = await client.from('private_messages')
+          .select('*')
+          .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + currentChatUserId + '),and(sender_id.eq.' + currentChatUserId + ',receiver_id.eq.' + currentUser.id + ')')
+          .order('created_at', { ascending: true })
+          .limit(200);
+        if (result.error) { console.error(result.error); return; }
         if (result.data) {
           for (var i = 0; i < result.data.length; i++) addMessage(result.data[i], false);
         }
-      } catch (e) { showError('Ошибка: ' + e.message); }
+      } catch (e) { console.error(e); }
       scrollToBottom();
     }
 
@@ -210,11 +374,10 @@
       seenMessages[message.id] = true;
       var div = document.createElement('div');
       div.className = 'message';
-      if (message.user_name === userName) div.classList.add('mine');
+      if (message.sender_id === currentUser.id) div.classList.add('mine');
       var meta = document.createElement('div');
       meta.className = 'meta';
-      var time = new Date(message.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-      meta.textContent = message.user_name + ' \u00b7 ' + time;
+      meta.textContent = formatTime(message.created_at);
       var text = document.createElement('div');
       text.className = 'text-content';
       text.textContent = message.text;
@@ -224,113 +387,92 @@
       if (scroll !== false) scrollToBottom();
     }
 
-    function scrollToBottom() {
-      if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+    function scrollToBottom() { if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight; }
+
+    // === ОТПРАВКА ===
+    form.addEventListener('submit', async function(event) {
+      event.preventDefault();
+      var text = textInput.value.trim();
+      if (!text || !currentChatUserId) return;
+      try {
+        var result = await client.from('private_messages').insert({
+          sender_id: currentUser.id,
+          receiver_id: currentChatUserId,
+          text: text
+        }).select().single();
+        if (result.error) { console.error(result.error); return; }
+        if (result.data) { textInput.value = ''; addMessage(result.data, true); }
+      } catch (e) { console.error(e); }
+    });
+
+    // === REALTIME ===
+    function startRealtime() {
+      if (channel) return;
+      channel = client.channel('neon-private-messages');
+      channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, function(payload) {
+        if (!payload || !payload.new) return;
+        var msg = payload.new;
+        var isForMe = (msg.receiver_id === currentUser.id && msg.sender_id === currentChatUserId) ||
+                      (msg.sender_id === currentUser.id && msg.receiver_id === currentChatUserId);
+        if (isForMe && currentChatUserId) {
+          addMessage(msg, true);
+        }
+        // Обновить список контактов если мы на экране контактов
+        if (contactsSection.style.display !== 'none') {
+          loadContacts();
+        }
+      });
+      channel.subscribe();
     }
-
-    // === ВХОД ===
-    loginBtn.addEventListener('click', function() {
-      var name = loginName.value.trim();
-      var pass = loginPass.value.trim();
-      if (name.length < 2) { showError('Введите никнейм (минимум 2 символа)'); return; }
-      if (pass.length < 1) { showError('Введите пароль'); return; }
-
-      // Проверяем: совпадает ли введённый пароль с личным или общим
-      var savedPass = getUserPassword();
-      if (pass !== savedPass && pass !== DEFAULT_PASSWORD) {
-        showError('❌ Неверный пароль!');
-        loginPass.value = '';
-        return;
-      }
-
-      hideError();
-      userName = name;
-      localStorage.setItem('messenger_name', userName);
-      localStorage.setItem('messenger_auth', 'ok');
-      showChat();
-    });
-
-    loginName.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); loginPass.focus(); }
-    });
-
-    loginPass.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); loginBtn.click(); }
-    });
 
     // === ВЫХОД ===
     logoutBtn.addEventListener('click', function() {
-      localStorage.removeItem('messenger_name');
-      localStorage.removeItem('messenger_auth');
+      localStorage.removeItem('messenger_user');
       location.reload();
     });
 
-    // === НАСТРОЙКИ / СМЕНА ПАРОЛЯ ===
+    // === СМЕНА ПАРОЛЯ ===
     settingsBtn.addEventListener('click', function() {
       newPassInput.value = '';
       newPassConfirm.value = '';
       modalMsg.textContent = '';
-      modalMsg.style.color = '';
       modalOverlay.classList.add('active');
       newPassInput.focus();
     });
 
-    modalCancel.addEventListener('click', function() {
-      modalOverlay.classList.remove('active');
-    });
+    modalCancel.addEventListener('click', function() { modalOverlay.classList.remove('active'); });
+    modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
 
-    modalOverlay.addEventListener('click', function(e) {
-      if (e.target === modalOverlay) modalOverlay.classList.remove('active');
-    });
-
-    modalSave.addEventListener('click', function() {
+    modalSave.addEventListener('click', async function() {
       var p1 = newPassInput.value.trim();
       var p2 = newPassConfirm.value.trim();
-
-      if (p1.length < 2) {
-        modalMsg.textContent = 'Пароль минимум 2 символа';
-        modalMsg.style.color = '#ff00aa';
-        return;
-      }
-      if (p1 !== p2) {
-        modalMsg.textContent = 'Пароли не совпадают!';
-        modalMsg.style.color = '#ff00aa';
-        return;
-      }
-
-      localStorage.setItem('messenger_password', p1);
-      modalMsg.textContent = '✅ Пароль сохранён!';
-      modalMsg.style.color = '#00ff88';
-
-      setTimeout(function() {
-        modalOverlay.classList.remove('active');
-      }, 1500);
-    });
-
-    newPassConfirm.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); modalSave.click(); }
-    });
-
-    // === ОТПРАВКА СООБЩЕНИЯ ===
-    form.addEventListener('submit', async function(event) {
-      event.preventDefault();
-      var text = textInput.value.trim();
-      if (!text) return;
+      if (p1.length < 2) { modalMsg.textContent = 'Минимум 2 символа'; modalMsg.style.color = '#ff00aa'; return; }
+      if (p1 !== p2) { modalMsg.textContent = 'Пароли не совпадают!'; modalMsg.style.color = '#ff00aa'; return; }
       try {
-        var result = await client.from('messages').insert({ user_name: userName, text: text }).select().single();
-        if (result.error) { showError('Ошибка отправки: ' + result.error.message); return; }
-        if (result.data) { textInput.value = ''; addMessage(result.data, true); }
-      } catch (e) { showError('Ошибка: ' + e.message); }
+        var result = await client.from('users').update({ password_hash: p1 }).eq('id', currentUser.id).select().single();
+        if (result.error) { modalMsg.textContent = 'Ошибка: ' + result.error.message; modalMsg.style.color = '#ff00aa'; return; }
+        currentUser.password_hash = p1;
+        localStorage.setItem('messenger_user', JSON.stringify(currentUser));
+        modalMsg.textContent = '✅ Пароль сохранён!';
+        modalMsg.style.color = '#00ff88';
+        setTimeout(function() { modalOverlay.classList.remove('active'); }, 1500);
+      } catch (e) { modalMsg.textContent = 'Ошибка: ' + e.message; modalMsg.style.color = '#ff00aa'; }
     });
+
+    newPassConfirm.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); modalSave.click(); } });
 
     // === АВТО-ВХОД ===
-    if (userName && userName.length >= 2 && userAuth === 'ok') {
-      loginName.value = userName;
-      showChat();
+    var savedUser = localStorage.getItem('messenger_user');
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        enterApp();
+      } catch (e) {
+        localStorage.removeItem('messenger_user');
+        showScreen('login');
+      }
     } else {
-      localStorage.removeItem('messenger_name');
-      localStorage.removeItem('messenger_auth');
-      showLogin();
+      showScreen('login');
     }
   </script>
 </body>
