@@ -324,6 +324,30 @@
     var dataChannels = {};
     var pendingFiles = {};
     var receivedChunks = {};
+    var loadContactsTimeout = null;
+
+    // Debounce функция для предотвращения частых вызовов
+    function debounce(func, wait) {
+      var timeout;
+      return function() {
+        var context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() { func.apply(context, args); }, wait);
+      };
+    }
+
+    // Throttle функция для ограничения частоты вызовов
+    function throttle(func, limit) {
+      var inThrottle;
+      return function() {
+        var context = this, args = arguments;
+        if (!inThrottle) {
+          func.apply(context, args);
+          inThrottle = true;
+          setTimeout(function() { inThrottle = false; }, limit);
+        }
+      };
+    }
 
     var rtcConfig = {
       iceServers: [
@@ -358,7 +382,11 @@
         p2pStatus.textContent = '🟢 P2P соединено с ' + userId.substring(0, 8);
         // Отправить ожидающие файлы
         if (pendingFiles[userId]) {
-          pendingFiles[userId].forEach(function(file) { sendFileP2P(userId, file); });
+          pendingFiles[userId].forEach(function(item) { 
+            var file = item.file || item;
+            var duration = item.duration;
+            sendFileP2P(userId, file, duration); 
+          });
           delete pendingFiles[userId];
         }
       };
@@ -470,11 +498,11 @@
       delete receivedChunks[fileId];
     }
 
-    async function sendFileP2P(toUser, file) {
+    async function sendFileP2P(toUser, file, duration) {
       var dc = dataChannels[toUser];
       if (!dc || dc.readyState !== 'open') {
         if (!pendingFiles[toUser]) pendingFiles[toUser] = [];
-        pendingFiles[toUser].push(file);
+        pendingFiles[toUser].push({ file: file, duration: duration });
         initiateP2P(toUser);
         p2pStatus.textContent = '⏳ Установка P2P соединения...';
         return;
@@ -493,7 +521,7 @@
         mimeType: file.type,
         fileSize: file.size,
         totalChunks: totalChunks,
-        duration: file.duration || 0
+        duration: duration || 0
       };
       dc.send(JSON.stringify(meta));
 
@@ -511,7 +539,7 @@
 
       // Показать у себя
       var url = URL.createObjectURL(file);
-      addMediaMessage(currentUser.id, file.type, url, file.name, file.duration);
+      addMediaMessage(currentUser.id, file.type, url, file.name, duration || 0);
     }
 
     function addMediaMessage(senderId, mimeType, url, fileName, duration) {
@@ -595,9 +623,8 @@
         mediaRecorder.onstop = function() {
           var duration = (Date.now() - recordingStartTime) / 1000;
           var blob = new Blob(audioChunks, { type: 'audio/webm' });
-          blob.duration = duration;
           blob.name = 'voice_' + Date.now() + '.webm';
-          sendFileP2P(currentChatUserId, blob);
+          sendFileP2P(currentChatUserId, blob, duration);
           stream.getTracks().forEach(function(t) { t.stop(); });
         };
 
@@ -768,22 +795,36 @@
         var ur = await client.from('users').select('*').in('id', ids).order('nickname', { ascending: true });
         if (ur.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
         var os = await loadOnlineStatuses(ids);
+        
+        // Получаем последние сообщения для всех контактов одним запросом
+        var lastMessages = {};
+        var msgPromises = ids.map(function(id) {
+          return getLastMessage(id).then(function(lm) { lastMessages[id] = lm; });
+        });
+        await Promise.all(msgPromises);
+        
         contactsList.innerHTML = '';
+        var fragment = document.createDocumentFragment();
         for (var i = 0; i < ur.data.length; i++) {
           var u = ur.data[i];
-          var lm = await getLastMessage(u.id);
+          var lm = lastMessages[u.id];
           var on = os[u.id] || false;
           var d = document.createElement('div');
           d.className = 'contact-item';
           d.innerHTML = '<div class="contact-avatar-wrap"><div class="contact-avatar">' + escapeHtml(u.nickname.charAt(0).toUpperCase()) + '</div><div class="online-dot ' + (on ? 'online' : 'offline') + '"></div></div><div class="contact-info"><div class="contact-name">' + escapeHtml(u.nickname) + (on ? ' <span style="color:#00ff88;font-size:11px;">онлайн</span>' : '') + '</div><div class="contact-last-msg">' + (lm ? escapeHtml(lm.text ? lm.text.substring(0, 40) : '📎 Файл') : 'Нет сообщений') + '</div></div><div class="contact-time">' + (lm ? formatTime(lm.created_at) : '') + '</div>';
           d.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
-          contactsList.appendChild(d);
+          fragment.appendChild(d);
         }
+        contactsList.appendChild(fragment);
       } catch (e) { contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + escapeHtml(e.message) + '</div>'; }
     }
 
     async function getLastMessage(uid) {
-      try { var r = await client.from('private_messages').select('*').or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + uid + '),and(sender_id.eq.' + uid + ',receiver_id.eq.' + currentUser.id + ')').order('created_at', { ascending: false }).limit(1); if (r.data && r.data.length > 0) return r.data[0]; } catch (e) {} return null;
+      try { 
+        var r = await client.from('private_messages').select('*').or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + uid + '),and(sender_id.eq.' + uid + ',receiver_id.eq.' + currentUser.id + ')').order('created_at', { ascending: false }).limit(1); 
+        if (r.data && r.data.length > 0) return r.data[0]; 
+      } catch (e) {} 
+      return null;
     }
 
     function formatTime(d) { return new Date(d).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); }
@@ -848,6 +889,27 @@
       div.appendChild(text);
       messagesEl.appendChild(div);
       if (scroll !== false) scrollToBottom();
+      
+      // Очистка старых сообщений для предотвращения утечек памяти
+      var msgs = messagesEl.querySelectorAll('.message');
+      if (msgs.length > 200) {
+        for (var i = 0; i < msgs.length - 200; i++) {
+          var msg = msgs[i];
+          // Очищаем URL объектов для изображений/видео/аудио
+          var media = msg.querySelector('img, video, audio');
+          if (media && media.src && media.src.startsWith('blob:')) {
+            URL.revokeObjectURL(media.src);
+          }
+          msg.remove();
+        }
+        // Очищаем старые записи из seenMessages
+        var seenKeys = Object.keys(seenMessages);
+        if (seenKeys.length > 300) {
+          for (var j = 0; j < seenKeys.length - 200; j++) {
+            delete seenMessages[seenKeys[j]];
+          }
+        }
+      }
     }
 
     function scrollToBottom() { if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight; }
@@ -883,7 +945,11 @@
             showLocalNotification((r.data && r.data.nickname) || 'Неизвестный', msg.text ? msg.text.substring(0, 100) : '📎 Файл');
           });
         }
-        if (screens.contacts.style.display !== 'none') loadContacts();
+        // Используем debounced версию loadContacts для предотвращения частых обновлений
+        if (screens.contacts.style.display !== 'none') {
+          clearTimeout(loadContactsTimeout);
+          loadContactsTimeout = setTimeout(loadContacts, 300);
+        }
       });
 
       // P2P сигналы
@@ -895,10 +961,13 @@
         }
       });
 
-      // Онлайн-статусы
-      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'user_presence' }, function() {
-        if (screens.contacts.style.display !== 'none') loadContacts();
-      });
+      // Онлайн-статусы (используем throttle для ограничения частоты обновлений)
+      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'user_presence' }, throttle(function() {
+        if (screens.contacts.style.display !== 'none') {
+          clearTimeout(loadContactsTimeout);
+          loadContactsTimeout = setTimeout(loadContacts, 500);
+        }
+      }, 1000));
 
       channel.subscribe();
     }
@@ -912,12 +981,27 @@
 
     logoutBtn.addEventListener('click', async function() {
       if (presenceInterval) clearInterval(presenceInterval);
+      if (loadContactsTimeout) clearTimeout(loadContactsTimeout);
       // Закрыть P2P соединения
-      for (var k in peerConnections) { try { peerConnections[k].close(); } catch (e) {} }
+      for (var k in peerConnections) { 
+        try { 
+          if (dataChannels[k]) dataChannels[k].close();
+          peerConnections[k].close(); 
+        } catch (e) {} 
+      }
       peerConnections = {};
       dataChannels = {};
+      pendingFiles = {};
+      receivedChunks = {};
+      // Очищаем URL объектов
+      var mediaElements = document.querySelectorAll('img[src^="blob:"], video[src^="blob:"], audio[src^="blob:"]');
+      for (var i = 0; i < mediaElements.length; i++) {
+        URL.revokeObjectURL(mediaElements[i].src);
+      }
       await client.auth.signOut();
       currentUser = null;
+      currentChatUserId = null;
+      seenMessages = {};
       showScreen('login');
     });
 
