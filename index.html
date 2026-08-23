@@ -57,8 +57,23 @@
     .add-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--neon-green); background: rgba(0,255,136,0.1); color: var(--neon-green); font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
     .add-btn:hover { background: var(--neon-green); color: var(--bg); }
     #contacts-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-    #contacts-list::-webkit-scrollbar { width: 4px; }
-    #contacts-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+    #contacts-list-chat { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    #contacts-list::-webkit-scrollbar, #contacts-list-chat::-webkit-scrollbar { width: 4px; }
+    #contacts-list::-webkit-scrollbar-thumb, #contacts-list-chat::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+    /* Адаптивный макет чата - как в стандартных мессенджерах */
+    .chat-layout { display: flex; height: 100dvh; }
+    .contacts-panel { width: 320px; min-width: 320px; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: rgba(10,10,15,0.98); }
+    .chat-panel { flex: 1; display: flex; flex-direction: column; height: 100%; }
+    .mobile-only { display: none; }
+    /* Мобильная версия */
+    @media (max-width: 768px) {
+      .chat-layout { flex-direction: column; }
+      .contacts-panel { width: 100%; min-width: 100%; position: absolute; inset: 0; z-index: 10; }
+      .contacts-panel.hidden { transform: translateX(-100%); transition: transform 0.3s ease; }
+      .chat-panel { position: relative; }
+      .mobile-only { display: block; }
+      .contacts-panel.show { transform: translateX(0); }
+    }
     .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; }
     .contact-item:hover { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); box-shadow: var(--glow-cyan); }
     .contact-avatar-wrap { position: relative; flex-shrink: 0; }
@@ -112,12 +127,14 @@
     .modal-msg { text-align: center; font-size: 13px; min-height: 18px; }
     .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .toggle-label { color: var(--text); font-size: 14px; }
-    .toggle-switch { position: relative; width: 48px; height: 26px; cursor: pointer; }
+    .toggle-switch { position: relative; width: 48px; height: 26px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .toggle-switch input { display: none; }
     .toggle-slider { position: absolute; inset: 0; background: var(--text-dim); border-radius: 26px; transition: 0.3s; }
     .toggle-slider::before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; bottom: 3px; background: var(--bg); border-radius: 50%; transition: 0.3s; }
     .toggle-switch input:checked + .toggle-slider { background: var(--neon-green); box-shadow: 0 0 8px rgba(0,255,136,0.4); }
     .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+    /* Для мобильных - обработка клика по label */
+    .toggle-switch:active .toggle-slider { opacity: 0.8; }
     .recording-indicator { display: none; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(255,0,170,0.1); border: 1px solid rgba(255,0,170,0.3); border-radius: 10px; color: var(--neon-pink); font-size: 14px; }
     .recording-indicator.active { display: flex; }
     .rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--neon-pink); animation: pulse 1s infinite; }
@@ -197,27 +214,48 @@
     <div id="contacts-list"></div>
   </section>
 
-  <!-- ЧАТ -->
-  <section id="screen-chat" class="screen" style="display:none;">
-    <header class="neon-header">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button id="back-btn" class="back-btn">← Назад</button>
-        <div><h2 class="neon-title-sm" id="chat-with"></h2></div>
-      </div>
-    </header>
-    <main id="messages"></main>
-    <div id="recording-indicator" class="recording-indicator">
-      <div class="rec-dot"></div>
-      <span>Запись... <span id="rec-time">0:00</span></span>
+  <!-- ЧАТ - АДАПТИВНЫЙ МАКЕТ -->
+  <section id="screen-chat" class="screen chat-screen" style="display:none;">
+    <div class="chat-layout">
+      <!-- Список контактов (левая панель) -->
+      <aside class="contacts-panel">
+        <header class="neon-header">
+          <div>
+            <h2 class="neon-title-sm">NEON CHAT</h2>
+            <p class="user-label">▸ <span id="who-chat"></span></p>
+          </div>
+          <div class="header-buttons">
+            <button id="add-contact-btn-chat" class="add-btn">+ Добавить</button>
+            <button id="settings-btn-chat" class="settings-btn">⚙️</button>
+            <button id="logout-btn-chat" class="ghost-btn">ВЫХОД</button>
+          </div>
+        </header>
+        <div id="contacts-list-chat"></div>
+      </aside>
+      
+      <!-- Область чата (правая панель) -->
+      <main class="chat-panel">
+        <header class="neon-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button id="back-btn-mobile" class="back-btn mobile-only">← Назад</button>
+            <div><h2 class="neon-title-sm" id="chat-with"></h2></div>
+          </div>
+        </header>
+        <main id="messages"></main>
+        <div id="recording-indicator" class="recording-indicator">
+          <div class="rec-dot"></div>
+          <span>Запись... <span id="rec-time">0:00</span></span>
+        </div>
+        <form id="chat-form" class="neon-form">
+          <input type="file" id="file-input" class="file-input" accept="image/*,video/*">
+          <button type="button" id="attach-btn" class="form-btn" title="Прикрепить фото/видео">📎</button>
+          <input type="text" id="text" placeholder="Сообщение..." autocomplete="off" maxlength="1000">
+          <button type="button" id="voice-btn" class="form-btn" title="Голосовое сообщение">🎤</button>
+          <button type="submit" id="send-btn" class="form-btn send-btn" title="Отправить">➤</button>
+        </form>
+        <div id="p2p-status" class="p2p-status"></div>
+      </main>
     </div>
-    <form id="chat-form" class="neon-form">
-      <input type="file" id="file-input" class="file-input" accept="image/*,video/*">
-      <button type="button" id="attach-btn" class="form-btn" title="Прикрепить фото/видео">📎</button>
-      <input type="text" id="text" placeholder="Сообщение..." autocomplete="off" maxlength="1000">
-      <button type="button" id="voice-btn" class="form-btn" title="Голосовое сообщение">🎤</button>
-      <button type="submit" id="send-btn" class="form-btn send-btn" title="Отправить">➤</button>
-    </form>
-    <div id="p2p-status" class="p2p-status"></div>
   </section>
 
   <!-- МОДАЛКА: ДОБАВИТЬ КОНТАКТ -->
@@ -288,14 +326,19 @@
     // Chat elements
     var who = document.getElementById('who');
     var contactsList = document.getElementById('contacts-list');
+    var contactsListChat = document.getElementById('contacts-list-chat');
     var messagesEl = document.getElementById('messages');
     var form = document.getElementById('chat-form');
     var textInput = document.getElementById('text');
     var chatWithEl = document.getElementById('chat-with');
     var backBtn = document.getElementById('back-btn');
+    var backBtnMobile = document.getElementById('back-btn-mobile');
     var logoutBtn = document.getElementById('logout-btn');
+    var logoutBtnChat = document.getElementById('logout-btn-chat');
     var settingsBtnEl = document.getElementById('settings-btn');
+    var settingsBtnChat = document.getElementById('settings-btn-chat');
     var addContactBtn = document.getElementById('add-contact-btn');
+    var addContactBtnChat = document.getElementById('add-contact-btn-chat');
     var attachBtn = document.getElementById('attach-btn');
     var fileInput = document.getElementById('file-input');
     var voiceBtn = document.getElementById('voice-btn');
@@ -310,6 +353,10 @@
     var notifToggle = document.getElementById('notif-toggle');
     var notifStatus = document.getElementById('notif-status');
     var settingsEmail = document.getElementById('settings-email');
+    
+    // Элементы для адаптивного макета
+    var contactsPanel = document.querySelector('.contacts-panel');
+    var whoChat = document.getElementById('who-chat');
 
     var currentUser = null;
     var currentChatUserId = null;
@@ -733,6 +780,7 @@
       } catch (e) {}
       var displayName = (currentUser.profile && currentUser.profile.nickname) ? currentUser.profile.nickname : currentUser.email.split('@')[0];
       who.textContent = displayName;
+      if (whoChat) whoChat.textContent = displayName;
       settingsEmail.textContent = currentUser.email;
       showScreen('contacts');
       loadContacts();
@@ -764,6 +812,14 @@
       else if (areNotificationsEnabled()) { notifStatus.textContent = 'Разрешите в браузере'; notifStatus.style.color = '#ffe600'; }
       else { notifStatus.textContent = 'Отключены'; notifStatus.style.color = '#6a6a8a'; }
     }
+    // Обработка клика по toggle для мобильных устройств
+    document.querySelector('.toggle-switch').addEventListener('click', function(e) {
+      var checkbox = document.getElementById('notif-toggle');
+      checkbox.checked = !checkbox.checked;
+      var event = new Event('change');
+      checkbox.dispatchEvent(event);
+    });
+    
     notifToggle.addEventListener('change', async function() {
       if (notifToggle.checked) {
         var g = await requestNotifPermission();
