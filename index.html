@@ -68,9 +68,9 @@
     /* Мобильная версия */
     @media (max-width: 768px) {
       .chat-layout { flex-direction: column; }
-      .contacts-panel { width: 100%; min-width: 100%; position: absolute; inset: 0; z-index: 10; }
-      .contacts-panel.hidden { transform: translateX(-100%); transition: transform 0.3s ease; }
-      .chat-panel { position: relative; }
+      .contacts-panel { width: 100%; min-width: 100%; position: absolute; inset: 0; z-index: 20; transition: transform 0.3s ease; }
+      .contacts-panel.hidden { transform: translateX(-100%); }
+      .chat-panel { position: relative; z-index: 10; }
       .mobile-only { display: block; }
       .contacts-panel.show { transform: translateX(0); }
     }
@@ -812,12 +812,15 @@
       else if (areNotificationsEnabled()) { notifStatus.textContent = 'Разрешите в браузере'; notifStatus.style.color = '#ffe600'; }
       else { notifStatus.textContent = 'Отключены'; notifStatus.style.color = '#6a6a8a'; }
     }
-    // Обработка клика по toggle для мобильных устройств
-    document.querySelector('.toggle-switch').addEventListener('click', function(e) {
-      var checkbox = document.getElementById('notif-toggle');
-      checkbox.checked = !checkbox.checked;
-      var event = new Event('change');
-      checkbox.dispatchEvent(event);
+    // Обработка клика по toggle для мобильных устройств - используем делегирование событий
+    settingsModal.addEventListener('click', function(e) {
+      if (e.target.closest('.toggle-switch')) {
+        e.preventDefault();
+        var checkbox = document.getElementById('notif-toggle');
+        checkbox.checked = !checkbox.checked;
+        var event = new Event('change');
+        checkbox.dispatchEvent(event);
+      }
     });
     
     notifToggle.addEventListener('change', async function() {
@@ -843,13 +846,26 @@
     // =============================================
     async function loadContacts() {
       contactsList.innerHTML = '<div class="no-contacts">Загрузка...</div>';
+      contactsListChat.innerHTML = '<div class="no-contacts">Загрузка...</div>';
       try {
         var cr = await client.from('contacts').select('contact_id').eq('user_id', currentUser.id);
-        if (cr.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
-        if (!cr.data || cr.data.length === 0) { contactsList.innerHTML = '<div class="no-contacts">Нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b></div>'; return; }
+        if (cr.error) { 
+          contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; 
+          contactsListChat.innerHTML = '<div class="no-contacts">Ошибка</div>';
+          return; 
+        }
+        if (!cr.data || cr.data.length === 0) { 
+          contactsList.innerHTML = '<div class="no-contacts">Нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b></div>'; 
+          contactsListChat.innerHTML = '<div class="no-contacts">Нет контактов.<br><br>Нажми <b style="color:#00ff88">+ Добавить</b></div>';
+          return; 
+        }
         var ids = cr.data.map(function(c) { return c.contact_id; });
         var ur = await client.from('users').select('*').in('id', ids).order('nickname', { ascending: true });
-        if (ur.error) { contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; return; }
+        if (ur.error) { 
+          contactsList.innerHTML = '<div class="no-contacts">Ошибка</div>'; 
+          contactsListChat.innerHTML = '<div class="no-contacts">Ошибка</div>';
+          return; 
+        }
         var os = await loadOnlineStatuses(ids);
         
         // Получаем последние сообщения для всех контактов одним запросом
@@ -859,20 +875,35 @@
         });
         await Promise.all(msgPromises);
         
+        // Создаем фрагменты для обоих списков
         contactsList.innerHTML = '';
-        var fragment = document.createDocumentFragment();
+        contactsListChat.innerHTML = '';
+        var fragmentMain = document.createDocumentFragment();
+        var fragmentChat = document.createDocumentFragment();
+        
         for (var i = 0; i < ur.data.length; i++) {
           var u = ur.data[i];
           var lm = lastMessages[u.id];
           var on = os[u.id] || false;
-          var d = document.createElement('div');
-          d.className = 'contact-item';
-          d.innerHTML = '<div class="contact-avatar-wrap"><div class="contact-avatar">' + escapeHtml(u.nickname.charAt(0).toUpperCase()) + '</div><div class="online-dot ' + (on ? 'online' : 'offline') + '"></div></div><div class="contact-info"><div class="contact-name">' + escapeHtml(u.nickname) + (on ? ' <span style="color:#00ff88;font-size:11px;">онлайн</span>' : '') + '</div><div class="contact-last-msg">' + (lm ? escapeHtml(lm.text ? lm.text.substring(0, 40) : '📎 Файл') : 'Нет сообщений') + '</div></div><div class="contact-time">' + (lm ? formatTime(lm.created_at) : '') + '</div>';
-          d.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
-          fragment.appendChild(d);
+          
+          // Элемент для основного списка
+          var d1 = document.createElement('div');
+          d1.className = 'contact-item';
+          d1.innerHTML = '<div class="contact-avatar-wrap"><div class="contact-avatar">' + escapeHtml(u.nickname.charAt(0).toUpperCase()) + '</div><div class="online-dot ' + (on ? 'online' : 'offline') + '"></div></div><div class="contact-info"><div class="contact-name">' + escapeHtml(u.nickname) + (on ? ' <span style="color:#00ff88;font-size:11px;">онлайн</span>' : '') + '</div><div class="contact-last-msg">' + (lm ? escapeHtml(lm.text ? lm.text.substring(0, 40) : '📎 Файл') : 'Нет сообщений') + '</div></div><div class="contact-time">' + (lm ? formatTime(lm.created_at) : '') + '</div>';
+          d1.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
+          fragmentMain.appendChild(d1.cloneNode(true));
+          
+          // Элемент для списка в чате
+          var d2 = d1.cloneNode(true);
+          d2.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
+          fragmentChat.appendChild(d2);
         }
-        contactsList.appendChild(fragment);
-      } catch (e) { contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + escapeHtml(e.message) + '</div>'; }
+        contactsList.appendChild(fragmentMain);
+        contactsListChat.appendChild(fragmentChat);
+      } catch (e) { 
+        contactsList.innerHTML = '<div class="no-contacts">Ошибка: ' + escapeHtml(e.message) + '</div>'; 
+        contactsListChat.innerHTML = '<div class="no-contacts">Ошибка: ' + escapeHtml(e.message) + '</div>';
+      }
     }
 
     async function getLastMessage(uid) {
@@ -887,6 +918,7 @@
     function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     addContactBtn.addEventListener('click', function() { addNicknameEl.value = ''; addMsgEl.textContent = ''; addModal.classList.add('active'); addNicknameEl.focus(); });
+    addContactBtnChat.addEventListener('click', function() { addNicknameEl.value = ''; addMsgEl.textContent = ''; addModal.classList.add('active'); addNicknameEl.focus(); });
     document.getElementById('add-cancel').addEventListener('click', function() { addModal.classList.remove('active'); });
     addModal.addEventListener('click', function(e) { if (e.target === addModal) addModal.classList.remove('active'); });
     document.getElementById('add-save').addEventListener('click', async function() {
@@ -912,13 +944,24 @@
     function openChat(user) {
       currentChatUserId = user.id;
       chatWithEl.textContent = user.nickname;
+      // На мобильных устройствах скрываем панель контактов
+      if (window.innerWidth <= 768) {
+        contactsPanel.classList.add('hidden');
+        contactsPanel.classList.remove('show');
+      }
       showScreen('chat');
       seenMessages = {};
       messagesEl.innerHTML = '';
       loadPrivateMessages();
     }
 
-    backBtn.addEventListener('click', function() { currentChatUserId = null; showScreen('contacts'); loadContacts(); });
+    backBtnMobile.addEventListener('click', function() { 
+      currentChatUserId = null; 
+      // На мобильных показываем панель контактов
+      contactsPanel.classList.remove('hidden');
+      contactsPanel.classList.add('show');
+      loadContacts(); 
+    });
 
     async function loadPrivateMessages() {
       try {
@@ -1031,11 +1074,17 @@
     // =============================================
     // SETTINGS & LOGOUT
     // =============================================
-    settingsBtnEl.addEventListener('click', function() { notifToggle.checked = areNotificationsEnabled(); updateNotifStatus(); settingsModal.classList.add('active'); });
+    function openSettings() { 
+      notifToggle.checked = areNotificationsEnabled(); 
+      updateNotifStatus(); 
+      settingsModal.classList.add('active'); 
+    }
+    settingsBtnEl.addEventListener('click', openSettings);
+    settingsBtnChat.addEventListener('click', openSettings);
     document.getElementById('settings-close').addEventListener('click', function() { settingsModal.classList.remove('active'); });
     settingsModal.addEventListener('click', function(e) { if (e.target === settingsModal) settingsModal.classList.remove('active'); });
 
-    logoutBtn.addEventListener('click', async function() {
+    function doLogout() {
       if (presenceInterval) clearInterval(presenceInterval);
       if (loadContactsTimeout) clearTimeout(loadContactsTimeout);
       // Закрыть P2P соединения
@@ -1054,12 +1103,16 @@
       for (var i = 0; i < mediaElements.length; i++) {
         URL.revokeObjectURL(mediaElements[i].src);
       }
-      await client.auth.signOut();
-      currentUser = null;
-      currentChatUserId = null;
-      seenMessages = {};
-      showScreen('login');
-    });
+      client.auth.signOut().then(function() {
+        currentUser = null;
+        currentChatUserId = null;
+        seenMessages = {};
+        showScreen('login');
+      });
+    }
+    
+    logoutBtn.addEventListener('click', doLogout);
+    logoutBtnChat.addEventListener('click', doLogout);
 
     // =============================================
     // AUTO-LOGIN
