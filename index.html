@@ -62,17 +62,22 @@
     #contacts-list::-webkit-scrollbar-thumb, #contacts-list-chat::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
     /* Адаптивный макет чата - как в стандартных мессенджерах */
     .chat-layout { display: flex; height: 100dvh; }
-    .contacts-panel { width: 320px; min-width: 320px; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: rgba(10,10,15,0.98); }
-    .chat-panel { flex: 1; display: flex; flex-direction: column; height: 100%; }
+    .contacts-panel { width: 320px; min-width: 320px; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: rgba(10,10,15,0.98); position: relative; z-index: 10; }
+    .chat-panel { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; z-index: 5; }
     .mobile-only { display: none; }
     /* Мобильная версия */
     @media (max-width: 768px) {
       .chat-layout { flex-direction: column; }
-      .contacts-panel { width: 100%; min-width: 100%; position: absolute; inset: 0; z-index: 20; transition: transform 0.3s ease; }
+      .contacts-panel { width: 100%; min-width: 100%; position: absolute; inset: 0; z-index: 30; transition: transform 0.3s ease; }
       .contacts-panel.hidden { transform: translateX(-100%); }
-      .chat-panel { position: relative; z-index: 10; }
+      .chat-panel { position: relative; z-index: 20; }
       .mobile-only { display: block; }
       .contacts-panel.show { transform: translateX(0); }
+    }
+    /* Десктопная версия - кнопки всегда кликабельны */
+    @media (min-width: 769px) {
+      .header-buttons { pointer-events: auto; z-index: 50; position: relative; }
+      .settings-btn, .add-btn, .ghost-btn { pointer-events: auto; z-index: 50; }
     }
     .contact-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,240,255,0.04); cursor: pointer; transition: all 0.3s ease; }
     .contact-item:hover { border-color: var(--neon-cyan); background: rgba(0,240,255,0.08); box-shadow: var(--glow-cyan); }
@@ -140,6 +145,12 @@
     .rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--neon-pink); animation: pulse 1s infinite; }
     .file-input { display: none; }
     .p2p-status { font-size: 11px; color: var(--text-dim); text-align: center; padding: 4px; }
+    /* Контекстное меню для удаления сообщений */
+    .context-menu { position: fixed; z-index: 1000; background: rgba(15, 15, 25, 0.98); border: 1px solid var(--border); border-radius: 10px; padding: 8px 0; min-width: 200px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+    .context-menu-item { padding: 10px 16px; cursor: pointer; color: var(--text); font-size: 14px; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+    .context-menu-item:hover { background: rgba(255, 0, 170, 0.1); color: var(--neon-pink); }
+    .context-menu-item.danger { color: var(--neon-pink); }
+    .context-menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
   </style>
 </head>
 <body>
@@ -287,6 +298,9 @@
     </div>
   </div>
 
+  <!-- КОНТЕКСТНОЕ МЕНЮ ДЛЯ УДАЛЕНИЯ СООБЩЕНИЙ -->
+  <div id="context-menu" class="context-menu" style="display:none;"></div>
+
   <script>
     var SUPABASE_URL = 'https://pocxolhghqxrlaqifxem.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3hvbGhnaHF4cmxhcWlmeGVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDA4ODQsImV4cCI6MjEwMjExNjg4NH0.NPl_MzneFevI-efp1wSRBIFVVRO5MA0PCmYGVAxABIg';
@@ -301,7 +315,15 @@
       chat: document.getElementById('screen-chat')
     };
 
-    function showScreen(name) { for (var k in screens) screens[k].style.display = k === name ? 'flex' : 'none'; }
+    function showScreen(name) { 
+      for (var k in screens) {
+        screens[k].style.display = k === name ? 'flex' : 'none';
+      }
+      // При показе экрана чата сбрасываем контекстное меню
+      if (name === 'chat') {
+        hideContextMenu();
+      }
+    }
 
     // Auth elements
     var regNickname = document.getElementById('reg-nickname');
@@ -353,6 +375,7 @@
     var notifToggle = document.getElementById('notif-toggle');
     var notifStatus = document.getElementById('notif-status');
     var settingsEmail = document.getElementById('settings-email');
+    var contextMenu = document.getElementById('context-menu');
     
     // Элементы для адаптивного макета
     var contactsPanel = document.querySelector('.contacts-panel');
@@ -363,6 +386,7 @@
     var seenMessages = {};
     var channel = null;
     var presenceInterval = null;
+    var contextMessageId = null;
 
     // =============================================
     // WEBRTC P2P
@@ -816,11 +840,17 @@
     settingsModal.addEventListener('click', function(e) {
       if (e.target.closest('.toggle-switch')) {
         e.preventDefault();
+        e.stopPropagation();
         var checkbox = document.getElementById('notif-toggle');
         checkbox.checked = !checkbox.checked;
         var event = new Event('change');
         checkbox.dispatchEvent(event);
       }
+    });
+    
+    // Также обрабатываем клик непосредственно по label
+    document.querySelector('.toggle-switch').addEventListener('click', function(e) {
+      e.stopPropagation();
     });
     
     notifToggle.addEventListener('change', async function() {
@@ -889,13 +919,26 @@
           // Элемент для основного списка
           var d1 = document.createElement('div');
           d1.className = 'contact-item';
+          d1.dataset.contactId = u.id;
           d1.innerHTML = '<div class="contact-avatar-wrap"><div class="contact-avatar">' + escapeHtml(u.nickname.charAt(0).toUpperCase()) + '</div><div class="online-dot ' + (on ? 'online' : 'offline') + '"></div></div><div class="contact-info"><div class="contact-name">' + escapeHtml(u.nickname) + (on ? ' <span style="color:#00ff88;font-size:11px;">онлайн</span>' : '') + '</div><div class="contact-last-msg">' + (lm ? escapeHtml(lm.text ? lm.text.substring(0, 40) : '📎 Файл') : 'Нет сообщений') + '</div></div><div class="contact-time">' + (lm ? formatTime(lm.created_at) : '') + '</div>';
-          d1.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
+          d1.addEventListener('click', (function(user) { 
+            return function(e) { 
+              e.preventDefault();
+              e.stopPropagation();
+              openChat(user); 
+            }; 
+          })(u));
           fragmentMain.appendChild(d1.cloneNode(true));
           
           // Элемент для списка в чате
           var d2 = d1.cloneNode(true);
-          d2.addEventListener('click', (function(user) { return function() { openChat(user); }; })(u));
+          d2.addEventListener('click', (function(user) { 
+            return function(e) { 
+              e.preventDefault();
+              e.stopPropagation();
+              openChat(user); 
+            }; 
+          })(u));
           fragmentChat.appendChild(d2);
         }
         contactsList.appendChild(fragmentMain);
@@ -953,6 +996,8 @@
       seenMessages = {};
       messagesEl.innerHTML = '';
       loadPrivateMessages();
+      // Скрываем контекстное меню если открыто
+      hideContextMenu();
     }
 
     backBtnMobile.addEventListener('click', function() { 
@@ -961,6 +1006,8 @@
       contactsPanel.classList.remove('hidden');
       contactsPanel.classList.add('show');
       loadContacts(); 
+      // Скрываем контекстное меню если открыто
+      hideContextMenu();
     });
 
     async function loadPrivateMessages() {
@@ -977,6 +1024,7 @@
       seenMessages[message.id] = true;
       var div = document.createElement('div');
       div.className = 'message';
+      div.dataset.messageId = message.id;
       if (message.sender_id === currentUser.id) div.classList.add('mine');
       var meta = document.createElement('div');
       meta.className = 'meta';
@@ -986,6 +1034,13 @@
       text.textContent = message.text;
       div.appendChild(meta);
       div.appendChild(text);
+      
+      // Добавляем контекстное меню для удаления сообщения (правая кнопка мыши)
+      div.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        showContextMenu(e, message.id, message.sender_id === currentUser.id);
+      });
+      
       messagesEl.appendChild(div);
       if (scroll !== false) scrollToBottom();
       
@@ -1083,6 +1138,97 @@
     settingsBtnChat.addEventListener('click', openSettings);
     document.getElementById('settings-close').addEventListener('click', function() { settingsModal.classList.remove('active'); });
     settingsModal.addEventListener('click', function(e) { if (e.target === settingsModal) settingsModal.classList.remove('active'); });
+
+    // =============================================
+    // КОНТЕКСТНОЕ МЕНЮ ДЛЯ УДАЛЕНИЯ СООБЩЕНИЙ
+    // =============================================
+    function showContextMenu(e, messageId, isMine) {
+      contextMessageId = messageId;
+      contextMenu.innerHTML = '';
+      
+      // Опция: Удалить у меня
+      var deleteForMe = document.createElement('div');
+      deleteForMe.className = 'context-menu-item';
+      deleteForMe.innerHTML = '🗑️ Удалить у меня';
+      deleteForMe.addEventListener('click', function() {
+        deleteMessageForMe(messageId);
+        hideContextMenu();
+      });
+      contextMenu.appendChild(deleteForMe);
+      
+      // Опция: Удалить у всех (только для своих сообщений)
+      if (isMine) {
+        var divider = document.createElement('div');
+        divider.className = 'context-menu-divider';
+        contextMenu.appendChild(divider);
+        
+        var deleteForAll = document.createElement('div');
+        deleteForAll.className = 'context-menu-item danger';
+        deleteForAll.innerHTML = '🔥 Удалить у собеседника';
+        deleteForAll.addEventListener('click', function() {
+          deleteMessageForAll(messageId);
+          hideContextMenu();
+        });
+        contextMenu.appendChild(deleteForAll);
+      }
+      
+      // Позиционируем меню
+      var x = e.clientX || e.touches[0].clientX;
+      var y = e.clientY || e.touches[0].clientY;
+      contextMenu.style.left = Math.min(x, window.innerWidth - 220) + 'px';
+      contextMenu.style.top = Math.min(y, window.innerHeight - 150) + 'px';
+      contextMenu.style.display = 'block';
+    }
+    
+    function hideContextMenu() {
+      contextMenu.style.display = 'none';
+      contextMessageId = null;
+    }
+    
+    async function deleteMessageForMe(messageId) {
+      try {
+        // Просто удаляем из DOM и seenMessages
+        var msgEl = messagesEl.querySelector('[data-message-id="' + messageId + '"]');
+        if (msgEl) {
+          msgEl.remove();
+        }
+        delete seenMessages[messageId];
+      } catch (e) {
+        console.error('Ошибка удаления сообщения:', e);
+      }
+    }
+    
+    async function deleteMessageForAll(messageId) {
+      try {
+        // Удаляем сообщение из базы данных
+        var r = await client.from('private_messages').delete().eq('id', messageId);
+        if (r.error) {
+          console.error('Ошибка удаления:', r.error);
+          return;
+        }
+        // Удаляем из DOM у всех пользователей
+        var msgEl = messagesEl.querySelector('[data-message-id="' + messageId + '"]');
+        if (msgEl) {
+          msgEl.remove();
+        }
+        delete seenMessages[messageId];
+      } catch (e) {
+        console.error('Ошибка удаления сообщения:', e);
+      }
+    }
+    
+    // Закрытие контекстного меню при клике в любом месте
+    document.addEventListener('click', function(e) {
+      if (!contextMenu.contains(e.target)) {
+        hideContextMenu();
+      }
+    });
+    
+    document.addEventListener('contextmenu', function(e) {
+      if (!e.target.closest('.message')) {
+        hideContextMenu();
+      }
+    });
 
     function doLogout() {
       if (presenceInterval) clearInterval(presenceInterval);
