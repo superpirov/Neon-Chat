@@ -9,7 +9,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
+import androidx.webkit.ServiceWorkerClientCompat;
+import androidx.webkit.ServiceWorkerControllerCompat;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -22,12 +25,17 @@ public class MainActivity extends Activity {
 
     private static final int FILE_CHOOSER_CODE = 1001;
     private static final int PERMS_CODE = 2002;
-    private static final String START_URL =
+
+    // Основной адрес: сайт на GitHub Pages. Обновления сайта подхватываются без пересборки APK.
+    private static final String REMOTE_URL = "https://superpirov.github.io/Neon-Chat/";
+    // Локальная копия, вшитая в APK (запасной вариант, если сайт недоступен)
+    private static final String LOCAL_URL =
             "https://appassets.androidplatform.net/assets/index.html";
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private PermissionRequest pendingPermission;
+    private boolean usedLocalFallback = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +55,21 @@ public class MainActivity extends Activity {
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                 .build();
 
+        // Перехват запросов Service Worker (нужен для локального режима)
+        try {
+            ServiceWorkerControllerCompat swController = ServiceWorkerControllerCompat.getInstance();
+            swController.setServiceWorkerClient(new ServiceWorkerClientCompat() {
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
+                    return assetLoader.shouldInterceptRequest(request.getUrl());
+                }
+            });
+        } catch (Exception ignored) {}
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                // Отвечаем только на локальный служебный домен, остальное — обычная сеть
                 return assetLoader.shouldInterceptRequest(request.getUrl());
             }
 
@@ -57,7 +77,6 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri url = request.getUrl();
                 String scheme = url.getScheme() == null ? "" : url.getScheme();
-                // Внешние ссылки (mailto:, tel:, https на чужие домены) — в браузер
                 if (scheme.equals("mailto") || scheme.equals("tel")) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, url));
@@ -65,6 +84,16 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 return false;
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                // Сайт недоступен — переключаемся на копию, вшитую в APK
+                if (request.isForMainFrame() && !usedLocalFallback
+                        && REMOTE_URL.equals(String.valueOf(request.getUrl()))) {
+                    usedLocalFallback = true;
+                    webView.loadUrl(LOCAL_URL);
+                }
             }
         });
 
@@ -97,7 +126,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.loadUrl(START_URL);
+        webView.loadUrl(REMOTE_URL);
         setContentView(webView);
 
         requestNeededPermissions();
