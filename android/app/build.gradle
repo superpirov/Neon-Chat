@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Подпись релиза: настройки в keystore/keystore.properties (не коммитится)
+def keystoreProps = new Properties()
+def ksPropsFile = file("../keystore/keystore.properties")
+def hasSigning = false
+if (ksPropsFile.exists()) {
+    ksPropsFile.withInputStream { keystoreProps.load(it) }
+    hasSigning = keystoreProps['storeFile'] != null && file(keystoreProps['storeFile']).exists()
+}
+
+android {
+    namespace 'com.neonchat.app'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.neonchat.app"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+
+    if (hasSigning) {
+        signingConfigs {
+            release {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
